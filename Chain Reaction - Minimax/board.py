@@ -2,7 +2,7 @@
 #
 # Task Name:        Implementation of MiniMax algorithm in Chain Reaction
 # Author List:      Job Jacob, Paul Antony
-# File Name:        CR_minimax.py
+# File Name:        board.py
 # Functions:        
 #
 # Global variables:
