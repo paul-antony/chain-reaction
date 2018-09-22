@@ -32,7 +32,7 @@ class Board():
 	#
 	# Function Name:    __getitem__()
 	# Input:            1) self --> the object of the class
-	#					2) pos --> the position (index) of any cell in the m*n board
+	#                   2) pos --> the position (index) of any cell in the m*n board
 	# Output:           self.board[pos[0]][pos[1]] --> the number of orbs present in the given cell position
 	# Logic:            This function is used to return the number of orbs in a particular cell.
 	# Example Call:     self.__getitem__([0,1])
@@ -45,8 +45,8 @@ class Board():
 	#
 	# Function Name:    __setitem__()
 	# Input:            1) self --> the object of the class
-	#					2) pos --> the position (index) of any cell in the m*n board
-	#					3) value --> the number of orbs present in the given cell position
+	#                   2) pos --> the position (index) of any cell in the m*n board
+	#                   3) value --> the number of orbs present in the given cell position
 	# Output:           None
 	# Logic:            This function is used to assign the number of orbs to the board position.
 	# Example Call:     self.__setitem__([0,1], 2)
@@ -77,10 +77,10 @@ class Board():
 	#
 	# Function Name:    criticalMass()
 	# Input:            1) self --> the object of the class 
-	#					2) pos --> the position (index) of any cell in the m*n board
+	#                   2) pos --> the position (index) of any cell in the m*n board
 	# Output:           1) 2 --> the critical mass of the given cell if it is a corner cell
-	#					2) 3 --> the critical mass of the given cell if it is an edge cell
-	#					3) 4 --> the critical mass of the given cell if it is a cell inside the board
+	#                   2) 3 --> the critical mass of the given cell if it is an edge cell
+	#                   3) 4 --> the critical mass of the given cell if it is a cell inside the board
 	# Logic:            This function is used to return the critical mass of a particular cell. If the cell is a corner, then the critical mass of that cell is 2. 
 	#					If it is an edge cell, then the critical mass of that cell is 3. And if it is a cell inside the board, then the critical mass of that cell 
 	#					is 4.
@@ -143,7 +143,7 @@ class Board():
 	#
 	# Function Name:    move()
 	# Input:            1) self --> the object of the class 
-	#					2) pos --> the position (index) of any cell in the m*n board
+	#                   2) pos --> the position (index) of any cell in the m*n board
 	# Output:			None
 	# Logic:            This function is used to execute a move by us. This includes putting an orb at the given cell and also the resulting chain reaction if the 
 	#					cell has reached its critical mass.
@@ -167,7 +167,7 @@ class Board():
 	# Function Name:    cell_owner()
 	# Input:            n --> the number of orbs at a particular cell 
 	# Output:			1) 0 --> if the cell is not owner by anyone
-	#					2) n/abs(n) --> the owner of the given cell position
+	#                   2) n/abs(n) --> the owner of the given cell position
 	# Logic:            This function is used to execute a move by us. This includes putting an orb at the given cell and also the resulting chain reaction if the 
 	#					cell has reached its critical mass.
 	# Example Call:     self.valid_move()
