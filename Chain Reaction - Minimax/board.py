@@ -14,9 +14,9 @@ class Board():
 	#
 	# Function Name:    __init__()
 	# Input:            1) self --> the object of the class
-	#					2) m --> the number of rows for the board
-	#					3) n --> the number of columns for the board
-	#					4) player --> used to determine which player's turn it is at any particular instance
+	#                   2) m --> the number of rows for the board
+	#                   3) n --> the number of columns for the board
+	#                   4) player --> used to determine which player's turn it is at any particular instance
 	# Output:           None
 	# Logic:            This function is used to initialize the Board object variables. 
 	# Example Call:     Board.__init__(9, 6, 1)
