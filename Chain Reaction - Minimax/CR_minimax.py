@@ -86,3 +86,10 @@ class Board:
         def input(self,state):
                 for pos in [(x,y) for x in range(self.m) for y in range(self.n)]:
                         self.board[pos[0]][pos[1]] = state[pos[0]][pos[1]]
+                        
+        def valid_move(self):
+                n=[]
+                for pos in [(x,y) for x in range(self.m) for y in range(self.n)]:
+                        if self.board[pos[0]][pos[1]]/self.player >= 0:
+                                n.append(pos)
+                return n
