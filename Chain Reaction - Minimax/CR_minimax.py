@@ -93,3 +93,18 @@ class Board:
                         if self.board[pos[0]][pos[1]]/self.player >= 0:
                                 n.append(pos)
                 return n
+
+
+        
+        def move(self,pos):
+                self.board[pos[0]][pos[1]] += self.player
+                unstable=[]
+                unstable.append(pos)
+                for pos in unstable:
+                        if abs(self.board[pos[0]][pos[1]]) >= self.critical_mass(pos):
+                                self.board[pos[0]][pos[1]] -= self.player * self.critical_mass(pos)
+                                for i in self.neighbors(pos):
+                                        self.board[i[0]][i[1]] = self.player * (abs(self.board[i[0]][i[1]]) + 1)
+                                        unstable.append(i)
+                self.player *= -1                
+                        
