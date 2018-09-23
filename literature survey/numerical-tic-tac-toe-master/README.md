@@ -9,13 +9,13 @@ Numerical tic-tac-toe is similar to normal tic-tac-toe, except instead of X's an
 
 Respectively.
 
-The players take turns (the odd player goes first) and each round a player puts one unused number on an open spot on the board. The goal is to have 4 numbers in a line sum to 34 (the average of te numbers 1 - 16).
+The players take turns (the odd player goes first) and each round a player puts one unused number on an open spot on the board. The goal is to have 4 numbers in a line sum to 34 (the average of the numbers 1 - 16).
 
 There's two ways to play:
 
-1. The computer against a human player, with the player choosing to go first or second.
+1. The computer against a human player, with the player choosing to go either first or second.
 
-2. The computer plays itself, talking alternating moves, allowing a human to watch by pressing a key to continue for each successive move.
+2. The computer plays against itself, taking alternating moves, allowing a human to watch by pressing a key to continue for each successive move.
 
 ### Implementation
 This implementation uses iterative deepening search and alpha-beta pruning. The algorithm searches down the tree to a specified depth and an evaluation function is used to evaluate all board states at that depth. Alpha-beta pruning is used to trim branches as these values are propagated back up to the root node. 
