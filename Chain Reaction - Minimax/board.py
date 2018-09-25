@@ -136,11 +136,14 @@ class Board():
         #
         #             
         def valid_move(self):
+                if self.cal_heuristics()/self.player < 0:
+                        return []
                 valid = []
                 for pos in [(x,y) for x in range(self.m) for y in range(self.n)]:
                         if self.board[pos[0]][pos[1]]/self.player >= 0:
                                 valid.append(pos)
                 return valid
+
 
         #
         #
