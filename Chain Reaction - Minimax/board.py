@@ -136,11 +136,14 @@ class Board():
         #
         #             
         def valid_move(self):
+                if self.cal_heuristics()/self.player < 0:
+                        return []
                 valid = []
                 for pos in [(x,y) for x in range(self.m) for y in range(self.n)]:
                         if self.board[pos[0]][pos[1]]/self.player >= 0:
                                 valid.append(pos)
                 return valid
+
 
         #
         #
@@ -182,25 +185,13 @@ class Board():
                 for pos in [(x,y) for x in range(self.m) for y in range(self.n)]:
                         if self.board[pos[0]][pos[1]]/self.player > 0:
                                 my_orbs += abs(self.board[pos[0]][pos[1]])
-                                flag_not_vulnerable = True
-                                for i in self.neighbors(pos):
-                                        if cell_owner(self.board[i[0]][i[1]]) == -self.player and (abs(self.board[i[0]][i[1]]) == self.critical_mass(i)-1):
-                                                heuristic_value -= 5-self.critical_mass(pos)
-                                                flag_not_vulnerable = False
-                                if flag_not_vulnerable:
-                                        if self.critical_mass(pos) == 3:
-                                                heuristic_value += 2
-                                        elif self.critical_mass(pos) == 2:
-                                                heuristic_value += 3
-                                        if abs(self.board[pos[0]][pos[1]]) == self.critical_mass(pos)-1:
-                                                heuristic_value += 2
                         else:
                                 opponent_orbs += abs(self.board[pos[0]][pos[1]])
                 heuristic_value = my_orbs - opponent_orbs
                 if opponent_orbs == 0 and my_orbs > 1:
-                        return 10000
+                        return 200
                 elif my_orbs == 0 and opponent_orbs > 1:
-                        return -10000
+                        return -200
                 return heuristic_value
                 
 def test():
