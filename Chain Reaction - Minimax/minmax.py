@@ -1,5 +1,6 @@
-import copy
+#minmax implementation
 
+import copy
 
 
 def minmax(b,depth=3):
