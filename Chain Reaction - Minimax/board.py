@@ -194,18 +194,7 @@ class Board():
                         return -200
                 return heuristic_value
                 
-def test():
-        b=Board()
-        print(b)
-        b.input(((0,0,0,0,0,0),(0,0,0,0,0,0),(0,0,0,1,-1,0),(0,0,2,-3,3,-1),(0,-1,-3,3,-3,0),(0,0,1,3,0,1),(0,0,-1,-1,0,0),(0,0,0,0,0,0),(0,0,0,0,0,0)))
-        print(b)
-        b.move((4,3))
-        print(b)
-        print(b.player)
-        print(b.valid_move())
-        b.move((0,0))
-        print(b)
-        print(b.cal_heuristics())
+
 
         
 
