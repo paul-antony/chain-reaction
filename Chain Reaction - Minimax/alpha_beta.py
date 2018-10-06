@@ -1,5 +1,4 @@
-#alpha-beta pruning
-#function returns best move
+#alpha-beta pruning function returns best move
 import copy
 
 def alpha_beta(b,depth = 3):
