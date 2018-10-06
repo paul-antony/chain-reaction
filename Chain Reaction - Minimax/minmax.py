@@ -1,7 +1,7 @@
 import copy
 
 def minmax(b,depth=3):
-	return max_value(b,depth)
+	return max_value(b,depth)[1]
 
 def max_value(b,depth):
 	moves = b.valid_move()

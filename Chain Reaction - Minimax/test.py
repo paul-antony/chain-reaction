@@ -20,7 +20,7 @@ def test():
 	print("Present State:")
 	b.input(((0,0,0,0,0,0),(0,0,0,0,0,0),(0,0,0,0,0,0),(0,0,0,0,0,0),(0,0,3,3,0,0),(0,0,-3,-3,0,0),(0,0,0,0,0,0),(0,0,0,0,0,0),(0,0,0,0,0,0)))
 	print(b)
-	print("Best Move:",minmax(b,3)[1])
+	print("Best Move:",minmax(b,3))
 	#print(b)
 	#print(b.valid_move())
 	#print(b.cal_heuristics())

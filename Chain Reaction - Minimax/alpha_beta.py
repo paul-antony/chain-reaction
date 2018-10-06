@@ -1,9 +1,9 @@
 #alpha-beta pruning
-
+#function returns best move
 import copy
 
 def alpha_beta(b,depth = 3):
-	return max_value(b,depth,-300,300)
+	return max_value(b,depth,-300,300)[1]
 
 def max_value(b,depth,alpha,beta):
 	moves = b.valid_move()
