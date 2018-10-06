@@ -1,3 +1,4 @@
+#minmax function returns best move
 import copy
 
 def minmax(b,depth=3):
