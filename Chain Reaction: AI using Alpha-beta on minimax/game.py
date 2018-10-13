@@ -93,7 +93,7 @@ def main():
 	drawBoard(board_ui)
 
 	if not player_first:
-		new_move = alpha_beta(board_ui,4)
+		new_move = alpha_beta(board_ui,2)
 		lock.acquire()
 		thread.start_new_thread(slowMove, (board_ui, new_move))
 		board_ui = board_ui.move(new_move)
@@ -121,7 +121,7 @@ def main():
 						winner = board_ui.player*(-1)
 						this_loop = False
 						break
-				new_move = alpha_beta(board_ui, 4)
+				new_move = alpha_beta(board_ui, 2)
 				print("new_move ", new_move)
 				print(new_move)
 				show_move(new_move)

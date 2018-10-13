@@ -13,13 +13,13 @@ def max_value(b,depth,alpha,beta):
 
 	b_score = -300
 	best_move = moves[0]
-    
+	
 	for pos in moves:
 		board = copy.deepcopy(b)
 		board.move(pos)
 		b_score = max(b_score,min_value(board,depth-1,alpha,beta)[0])
 
-    
+	
 		if alpha < b_score:
 			alpha = b_score
 			best_move = pos
@@ -40,12 +40,12 @@ def min_value(b,depth,alpha,beta):
 
 	b_score = 300
 	best_move = moves[0]
-    
+	
 	for pos in moves:
 		board = copy.deepcopy(b)
 		board.move(pos)
 		b_score = min(b_score,max_value(board,depth-1,alpha,beta)[0])
-    
+	
 		if beta > b_score:
 			beta = b_score
 			best_move = pos
