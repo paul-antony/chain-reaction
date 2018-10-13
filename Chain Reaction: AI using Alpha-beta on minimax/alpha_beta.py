@@ -1,11 +1,13 @@
 #alpha-beta pruning function returns best move
 import copy
+import random
 
 def alpha_beta(b,depth = 3):
 	return max_value(b,depth,-300,300)[1]
 
 def max_value(b,depth,alpha,beta):
 	moves = b.valid_move()
+	random.shuffle(moves)
 	if len(moves) == 0:
 		return -1*b.cal_heuristics(),(0,0)
 	if depth == 0:
@@ -33,6 +35,7 @@ def max_value(b,depth,alpha,beta):
 
 def min_value(b,depth,alpha,beta):
 	moves = b.valid_move()
+	random.shuffle(moves)
 	if len(moves) == 0:
 		return -1*b.cal_heuristics(),(0,0)
 	if depth == 0:
