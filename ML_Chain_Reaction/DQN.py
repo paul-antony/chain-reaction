@@ -74,7 +74,7 @@ class QNetwork:
 		action = np.argmax(action_reward[0])
 
 		valid = board.valid_move()
-		if self.act_convert(action) NOT IN valid:
+		if self.act_convert(action) not in valid:
 			return valid[random.randrange(len(valid)]
 
 		return self.act_convert(action)
