@@ -66,7 +66,7 @@ class QNetwork:
 
 	@staticmethod
 	def act_convert(action):
-		return (action/6,action%6)
+		return (int(action/6),action%6)
 	
 
 	def act(self,board):
