@@ -196,5 +196,13 @@ class Board():
 			return -200
 		return heuristic_value
 
-
-
+	def list(self):
+		state = []
+		for i in range(self.m):
+			for j in range(self.n):
+				state.append(self.board[i][j])
+		return state
+	
+	def reset(self):
+		self.board = [[0 for i in range(self.n)] for i in range(self.m)]
+		self.player = 1
