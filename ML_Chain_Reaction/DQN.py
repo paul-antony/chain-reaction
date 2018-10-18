@@ -33,9 +33,9 @@ class QNetwork:
     	def build_model(self):
 		model = Sequential()
 		
-		model.add(Dense(24, input_dim = self.input_dim,activation = "relu")) 
+		model.add(Dense(60, input_dim = self.input_dim,activation = "relu")) 
 		
-		model.add(Dense(24, activation = "relu")) 
+		model.add(Dense(60, activation = "relu")) 
 		
 		model.add(Dense(self.output_dim, activation = "linear")) # output layer
 		
@@ -56,10 +56,10 @@ class QNetwork:
 		if np.random.rand() <= self.epsilon:
 			action = random.randrange(self.output_dim)
 		else:
-			action_reward = self.model.predict(board.list())
+			action_reward = self.model.predict(np.array(board.list()))
 			action = np.argmax(action_reward[0])
 			valid = board.valid_move()
-			if self.act_convert(action) NOT IN valid
+			if self.act_convert(action) NOT IN valid:
 				return valid[random.randrange(len(valid)]
 		
 		return self.act_convert(action)
@@ -70,11 +70,11 @@ class QNetwork:
 	
 
 	def act(self,board):
-		action_reward = self.model.predict(board.list())
+		action_reward = self.model.predict(np.array(board.list()))
 		action = np.argmax(action_reward[0])
 
 		valid = board.valid_move()
-		if self.act_convert(action) NOT IN valid
+		if self.act_convert(action) NOT IN valid:
 			return valid[random.randrange(len(valid)]
 
 		return self.act_convert(action)
