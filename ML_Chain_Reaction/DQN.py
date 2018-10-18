@@ -8,8 +8,6 @@ from keras.optimizers import Adam
 from collections import deque
 
 
-num_episodes = 1000
-num_steps = 500
 
 input_dim = 54
 output_dim = 54
@@ -17,18 +15,14 @@ output_dim = 54
 epsilon = 1.0
 epsilon_min = 0.01
 epsilon_decay = 0.995 #we want to decrease the number of explorations as it gets good at playing games.
-gamma = 0.95 # Discount rate
 lr = 0.001
-done = False
-batch_size = 32
 
 class QNetwork:
-    	def __init__(self, input_dim, output_dim, lr, gamma, epsilon, epsilon_min, epsilon_decay):
+    	def __init__(self, input_dim, output_dim, lr, epsilon, epsilon_min, epsilon_decay):
 		self.input_dim = input_dim
 		self.output_dim = output_dim
 	
 		
-		self.gamma = gamma
 		self.epsilon = epsilon
 		self.epsilon_min = epsilon_min
 		self.epsilon_decay = epsilon_decay
@@ -87,6 +81,8 @@ class QNetwork:
 
 	
 	def eps_update(self):
-		if self.epsilon > self.epsilon_min:
-			self.epsilon = self.epsilon * (self.epsilon_decay / 100)
+        	if self.epsilon > self.epsilon_min:
+            		self.epsilon *= self.epsilon_decay
 	
+	def train(self,x,y):
+		self.model.fit(x, y, epochs=2, verbose=0)
