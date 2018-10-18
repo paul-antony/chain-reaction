@@ -86,3 +86,6 @@ class QNetwork:
 	
 	def train(self,x,y):
 		self.model.fit(x, y, epochs=2, verbose=0)
+
+	def net_output(self,input):
+		return self.model.predict(np.array(input))
