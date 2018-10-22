@@ -18,19 +18,18 @@ epsilon_decay = 0.995 #we want to decrease the number of explorations as it gets
 lr = 0.001
 
 class QNetwork:
-    	def __init__(self, input_dim, output_dim, lr, epsilon, epsilon_min, epsilon_decay):
+	def __init__(self, input_dim, output_dim, lr, epsilon, epsilon_min, epsilon_decay):
+
 		self.input_dim = input_dim
-		self.output_dim = output_dim
-	
-		
+		self.output_dim = output_dim		
 		self.epsilon = epsilon
 		self.epsilon_min = epsilon_min
 		self.epsilon_decay = epsilon_decay
-		
 		self.lr = lr
 		self.model = self.build_model()
 	
-    	def build_model(self):
+	def build_model(self):
+
 		model = Sequential()
 		
 		model.add(Dense(60, input_dim = self.input_dim,activation = "relu")) 
@@ -46,23 +45,31 @@ class QNetwork:
 		return model
 
 	
-    	def load(self, name):
+	def load(self, name):
+
         	self.model.load_weights(name)
 
-    	def save(self, name):
+	def save(self, name):
+
         	self.model.save_weights(name)
 
 	def act_train(self,board):
+		action_reward = self.model.predict(np.array([board.list()]))
 		if np.random.rand() <= self.epsilon:
 			action = random.randrange(self.output_dim)
 		else:
-			action_reward = self.model.predict(np.array(board.list()))
 			action = np.argmax(action_reward[0])
 			valid = board.valid_move()
-			if self.act_convert(action) NOT IN valid:
-				return valid[random.randrange(len(valid)]
+			if self.act_convert(action) not in valid:
+				return valid[random.randrange(len(valid))], action_reward[0].tolist()
 		
-		return self.act_convert(action)
+		return self.act_convert(action), action_reward[0].tolist()
+
+
+
+	def qvalue(self, board):
+		action_reward = self.model.predict(np.array([board.list()]))[0]
+		return action_reward.tolist()
 
 	@staticmethod
 	def act_convert(action):
@@ -75,17 +82,18 @@ class QNetwork:
 
 		valid = board.valid_move()
 		if self.act_convert(action) not in valid:
-			return valid[random.randrange(len(valid)]
+			return valid[random.randrange(len(valid))]
 
 		return self.act_convert(action)
 
 	
 	def eps_update(self):
-        	if self.epsilon > self.epsilon_min:
-            		self.epsilon *= self.epsilon_decay
+		if self.epsilon > self.epsilon_min:
+			self.epsilon = self.epsilon * self.epsilon_decay
+			print(self.epsilon)
 	
 	def train(self,x,y):
-		self.model.fit(x, y, epochs=2, verbose=0)
+		self.model.fit(np.array(x), np.array(y), epochs=2, verbose=0)
 
 	def net_output(self,input):
 		return self.model.predict(np.array(input))
