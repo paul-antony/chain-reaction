@@ -13,7 +13,7 @@ network.load('weight_data.h5')
 board = Board()
 buffer = replay_byffer(alpha,gama)
 
-no_of_games = 100
+no_of_games = 2000
 win = 0
 while no_of_games > 0:#no of games to run
 	over = 0
