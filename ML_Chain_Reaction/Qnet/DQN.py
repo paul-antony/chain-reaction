@@ -13,8 +13,8 @@ input_dim = 54
 output_dim = 54
 
 epsilon = 1.0
-epsilon_min = 0.01
-epsilon_decay = 0.995 #we want to decrease the number of explorations as it gets good at playing games.
+epsilon_min = 0.10
+epsilon_decay = 0.91 #we want to decrease the number of explorations as it gets good at playing games.
 lr = 0.001
 
 class QNetwork:
@@ -105,5 +105,5 @@ class QNetwork:
 
 	
 	def train(self,x,y):
-		self.model.fit(np.array(x), np.array(y), epochs=2, verbose=0)
+		self.model.fit(np.array(x), np.array(y), epochs=1, verbose=0)
 
