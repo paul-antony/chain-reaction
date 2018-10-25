@@ -15,7 +15,7 @@ def train():
 	board = Board()
 	buffer = replay_byffer(alpha,gama)
 
-	no_of_games = 1500
+	no_of_games = 1000
 
 	while no_of_games> 0:#no of games to run
 		game_over = False
