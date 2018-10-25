@@ -53,15 +53,23 @@ class QNetwork:
 
         	self.model.save_weights(name)
 
-	def act_train(self,board):
+	def action_training(self,board):
+
 		action_reward = self.model.predict(np.array([board.list()]))
+
 		if np.random.rand() <= self.epsilon:
 			action = random.randrange(self.output_dim)
+
 		else:
-			action = np.argmax(action_reward[0])
-			valid = board.valid_move()
-			if self.act_convert(action) not in valid:
-				return valid[random.randrange(len(valid))], action_reward[0].tolist()
+			if board.player == 1:
+				action = np.argmax(action_reward[0])
+
+			else:
+				action = np.argmin(action_reward[0])
+
+			valid_moves = board.valid_move()
+			if self.act_convert(action) not in valid_moves:
+				return valid_moves[random.randrange(len(valid_moves))], action_reward[0].tolist()
 		
 		return self.act_convert(action), action_reward[0].tolist()
 
@@ -77,12 +85,16 @@ class QNetwork:
 	
 
 	def act(self,board):
-		action_reward = self.model.predict(np.array(board.list()))
-		action = np.argmax(action_reward[0])
+		action_reward = self.model.predict(np.array([board.list()]))
+		if board.player == 1:
+			action = np.argmax(action_reward[0])
 
-		valid = board.valid_move()
-		if self.act_convert(action) not in valid:
-			return valid[random.randrange(len(valid))]
+		else:
+			action = np.argmin(action_reward[0])
+
+		valid_moves = board.valid_move()
+		if self.act_convert(action) not in valid_moves:
+			return valid_moves[random.randrange(len(valid_moves))]
 
 		return self.act_convert(action)
 
@@ -90,10 +102,8 @@ class QNetwork:
 	def eps_update(self):
 		if self.epsilon > self.epsilon_min:
 			self.epsilon = self.epsilon * self.epsilon_decay
-			print(self.epsilon)
+
 	
 	def train(self,x,y):
 		self.model.fit(np.array(x), np.array(y), epochs=2, verbose=0)
 
-	def net_output(self,input):
-		return self.model.predict(np.array(input))

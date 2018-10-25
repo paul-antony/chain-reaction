@@ -205,4 +205,4 @@ class Board():
 	
 	def reset(self):
 		self.board = [[0 for i in range(self.n)] for i in range(self.m)]
-		self.player = -1
+		self.player = self.player * -1
