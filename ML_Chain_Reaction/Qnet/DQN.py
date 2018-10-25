@@ -40,7 +40,7 @@ class QNetwork:
 		
 		model.compile(loss="mse",optimizer = Adam(lr=self.lr))
 		
-		model.summary()
+		#model.summary()
 		
 		return model
 
