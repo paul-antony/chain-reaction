@@ -41,7 +41,7 @@ def alpha(depth = 2):
 
 		board.reset()
 		no_of_games = no_of_games -1
-		print("alpha:",no_of_games)
+		print("alpha_",depth,"":",no_of_games)
 		
 	return win
 

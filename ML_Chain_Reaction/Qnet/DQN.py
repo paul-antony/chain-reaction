@@ -71,7 +71,7 @@ class QNetwork:
 
 			if self.act_convert(action) not in valid_moves:
 			
-				for i in self.sort(action_reward[0].tolist()):
+				for i in self.sort(action_reward[0].tolist(),board.player):
 					if self.act_convert(i[1]) in valid_moves:
 						action = i[1]
 						break
@@ -100,7 +100,7 @@ class QNetwork:
 		valid_moves = board.valid_move()
 		if self.act_convert(action) not in valid_moves:
 			
-			for i in self.sort(action_reward[0].tolist()):
+			for i in self.sort(action_reward[0].tolist(),board.player):
 				if self.act_convert(i[1]) in valid_moves:
 					action = i[1]
 					break
@@ -118,15 +118,17 @@ class QNetwork:
 
 
 	@staticmethod
-	def sort(input):
+	def sort(input,rev):
 		output = []
 		for i in range(0,len(input)):
 			output.append([input[i],i])
-
-		output.sort(key = lambda x: x[0],reverse = True)
+		if rev == 1:
+			output.sort(key = lambda x: x[0],reverse = True)
+		else:
+			output.sort(key = lambda x: x[0],reverse = False)
 		return output
 
 
 
 if __name__ == "__main__":
-	print(QNetwork.sort([10,3,-200,6,3.14,-3.323]))
+	print(QNetwork.sort([10,3,-200,6,3.14,-3.323],False))
