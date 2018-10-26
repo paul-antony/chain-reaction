@@ -10,12 +10,13 @@ from alpha_beta import *
 def train():
 	network = QNetwork(input_dim, output_dim, lr, epsilon, epsilon_min, epsilon_decay)
 	#network.save('weight_data.h5')
+	#exit(0)
 	network.load('weight_data.h5')
 
 	board = Board()
 	buffer = replay_byffer(alpha,gama)
 
-	no_of_games = 1000
+	no_of_games = 1
 
 	while no_of_games> 0:#no of games to run
 		game_over = False
@@ -37,11 +38,12 @@ def train():
 			buffer_entry.append(replay_byffer.index_1d(action))
 			buffer_entry.append(Q_value)
 			buffer_entry.append(player)
+			buffer_entry.append(replay_byffer.index_list_converter(board.invalid_move()))
 
 			board.move(action)
 			value = board.cal_heuristics()
 			if value in (200,-200):
-				buffer_entry.append(-1*board.player*value)
+				buffer_entry.append(-1*board.player*100)
 				buffer.push(copy.deepcopy(buffer_entry))
 				game_over = True
 				break
@@ -61,11 +63,12 @@ def train():
 			buffer_entry.append(replay_byffer.index_1d(action))
 			buffer_entry.append(Q_value)
 			buffer_entry.append(player)
+			buffer_entry.append(replay_byffer.index_list_converter(board.invalid_move()))
 
 			board.move(action)
 			value = board.cal_heuristics()
 			if value in (200,-200):
-				buffer_entry.append(-1*board.player*value)
+				buffer_entry.append(-1*board.player*100)
 				buffer.push(copy.deepcopy(buffer_entry))
 				game_over = True
 				break
@@ -78,6 +81,7 @@ def train():
 		no_of_games = no_of_games - 1
 
 		x, y = buffer.generate_data()
+
 		network.train(x,y)
 		network.save('weight_data.h5')
 

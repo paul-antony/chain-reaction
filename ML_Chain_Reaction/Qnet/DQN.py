@@ -14,7 +14,7 @@ output_dim = 54
 
 epsilon = 1.0
 epsilon_min = 0.10
-epsilon_decay = 0.91 #we want to decrease the number of explorations as it gets good at playing games.
+epsilon_decay = 0.939 #we want to decrease the number of explorations as it gets good at playing games.
 lr = 0.001
 
 class QNetwork:
@@ -68,8 +68,13 @@ class QNetwork:
 				action = np.argmin(action_reward[0])
 
 			valid_moves = board.valid_move()
+
 			if self.act_convert(action) not in valid_moves:
-				return valid_moves[random.randrange(len(valid_moves))], action_reward[0].tolist()
+			
+				for i in self.sort(action_reward[0].tolist()):
+					if self.act_convert(i[1]) in valid_moves:
+						action = i[1]
+						break
 		
 		return self.act_convert(action), action_reward[0].tolist()
 
@@ -94,7 +99,11 @@ class QNetwork:
 
 		valid_moves = board.valid_move()
 		if self.act_convert(action) not in valid_moves:
-			return valid_moves[random.randrange(len(valid_moves))]
+			
+			for i in self.sort(action_reward[0].tolist()):
+				if self.act_convert(i[1]) in valid_moves:
+					action = i[1]
+					break
 
 		return self.act_convert(action)
 
@@ -107,3 +116,17 @@ class QNetwork:
 	def train(self,x,y):
 		self.model.fit(np.array(x), np.array(y), epochs=1, verbose=0)
 
+
+	@staticmethod
+	def sort(input):
+		output = []
+		for i in range(0,len(input)):
+			output.append([input[i],i])
+
+		output.sort(key = lambda x: x[0],reverse = True)
+		return output
+
+
+
+if __name__ == "__main__":
+	print(QNetwork.sort([10,3,-200,6,3.14,-3.323]))

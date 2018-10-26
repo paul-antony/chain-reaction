@@ -144,6 +144,15 @@ class Board():
 				valid.append(pos)
 		return valid
 
+
+
+	def invalid_move(self):
+		invalid = []
+		for pos in [(x,y) for x in range(self.m) for y in range(self.n)]:
+			if self.board[pos[0]][pos[1]]/self.player < 0:
+				invalid.append(pos)
+		return invalid
+
         #
         #
         # Function Name:    move()
@@ -205,4 +214,4 @@ class Board():
 	
 	def reset(self):
 		self.board = [[0 for i in range(self.n)] for i in range(self.m)]
-		self.player = 1
+		self.player = -1

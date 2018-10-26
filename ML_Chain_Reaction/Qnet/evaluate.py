@@ -11,7 +11,7 @@ network.load('weight_data.h5')
 board = Board()
 
 
-def alpha():
+def alpha(depth = 2):
 
 	no_of_games = 1
 	win = 0
@@ -21,7 +21,7 @@ def alpha():
 
 		while game_over == False:#game loop
 
-			action = alpha_beta(board)
+			action = alpha_beta(board,depth)
 			board.move(action)
 
 			value = board.cal_heuristics()

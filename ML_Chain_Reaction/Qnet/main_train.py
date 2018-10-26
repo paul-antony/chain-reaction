@@ -3,12 +3,16 @@ from csv_write import *
 from evaluate import *
 
 
-count = 0
+
 while True:
 	train()
-	alpha_csv(alpha())
-	random_csv(rand())
-	print("round:",count)
-	count = count + 1
+	
+	data = []
+	data.append(rand())
+	data.append(alpha(1))
+	data.append(alpha(2))
+
+	write_to_csv(data,"pastdata.csv")
+
 
 	
