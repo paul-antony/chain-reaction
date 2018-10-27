@@ -23,14 +23,31 @@ var gameOptions = {
   cellSize: 58,
   cellPadding: 2,
   orbRadius: 20,
-  colors: [0xff0000, 0x00ff00],
+  colors: [0xff0000, 0x00ff00, 0x000000],
   burstTime: 100,
-  gameType: 1
 }
 
-var cell = [[]];
+var win;
+
+var gameType = 1;
 
 var game = new Phaser.Game(gameOptions.gameWidth, gameOptions.gameHeight, Phaser.AUTO, 'game-section', { preload: preload, create: create, update: update });
+
+var winState = {
+  preload: function() {
+    game.stage.backgroundColor = gameOptions.colors[3];
+  },
+  create: function() {
+    if(win==1 && gameType==1) {
+      var winLabel = game.add.text(25, 80, 'Player 1 wins!' , { font: '50px Arial', fill: '#ffffff' });
+    }
+    else if(win==-1 && gameType==1) {
+      var winLabel = game.add.text(25, 80, 'Player 2 wins!' , { font: '50px Arial', fill: '#ffffff' });
+    }
+  }
+}
+
+game.state.add('win', winState);
 
 function preload() {
   this.load.image('cell', 'assets/cell.png');
@@ -48,10 +65,6 @@ function create() {
 function update() {
   game.input.onDown.add(updateGameState, this);
   updateBoard();
-}
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function updateGameState() {
@@ -90,6 +103,7 @@ async function updateGameState() {
                 }
               }
             }
+            checkWin();
           }
         }
         break;
@@ -111,7 +125,10 @@ async function updateGameState() {
       game.stage.backgroundColor = gameOptions.colors[1];
     }
   }
-  console.log(gameState.board);
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function getNeighbors(rowIndex, colIndex) {
@@ -141,6 +158,45 @@ function criticalMass(rowIndex, colIndex) {
     else {
       return 4;
     }
+}
+
+function checkWin() {
+  let winChance;
+  for(let rowIndex=0; rowIndex<gameState.board.length; ++rowIndex) {
+    for(let colIndex=0; colIndex<gameState.board[rowIndex].length; ++colIndex) {
+      if(gameState.board[rowIndex][colIndex]>0) {
+        winChance = 1;
+        break;
+      }
+      else if(gameState.board[rowIndex][colIndex]<0) {
+        winChance = -1;
+        break;
+      }
+    }
+    if(winChance==1 || winChance==-1) {
+      break;
+    }
+  }
+  for(let rowIndex=0; rowIndex<gameState.board.length; ++rowIndex) {
+    for(let colIndex=0; colIndex<gameState.board[rowIndex].length; ++colIndex) {
+      if(gameState.board[rowIndex][colIndex]>0 && winChance==1) {
+        win = 1;
+      }
+      else if(gameState.board[rowIndex][colIndex]<0 && winChance==-1) {
+        win = -1;
+      }
+      else if((gameState.board[rowIndex][colIndex]>0 && winChance==-1) || (gameState.board[rowIndex][colIndex]<0 && winChance==1))  {
+        win = 0;
+        break;
+      }
+    }
+    if(win==0) {
+      break;
+    }
+  }
+  if(win==1 || win==-1) {
+    game.state.start('win');
+  }
 }
 
 function updateBoard() {
