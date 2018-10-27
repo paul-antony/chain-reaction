@@ -48,6 +48,51 @@ var gameType1State = {
 
 game.state.add('gameType1', gameType1State);
 
+var gameType2State = {
+  preload: function() {
+    preload();
+  },
+  create: function() {
+    create();
+  },
+  update: function() {
+    game.input.onDown.add(updateGameState, this);
+    updateBoard();
+  }
+}
+
+game.state.add('gameType2', gameType2State);
+
+var gameType3State = {
+  preload: function() {
+    preload();
+  },
+  create: function() {
+    create();
+  },
+  update: function() {
+    game.input.onDown.add(updateGameState, this);
+    updateBoard();
+  }
+}
+
+game.state.add('gameType3', gameType3State);
+
+var gameType4State = {
+  preload: function() {
+    preload();
+  },
+  create: function() {
+    create();
+  },
+  update: function() {
+    game.input.onDown.add(updateGameState, this);
+    updateBoard();
+  }
+}
+
+game.state.add('gameType4', gameType4State);
+
 var menuState = {
   preload: function() {
     this.load.image('button', 'assets/button.png');
@@ -55,16 +100,29 @@ var menuState = {
   },
   create: function() {
     var menuLabel = game.add.text(42, 80, 'Chain Reaction' , { font: '40px Arial', fill: '#ffffff' });
-    gameType1Button = game.add.button(((gameOptions.gameWidth/2)-95), 210, 'button', gameType1Click, this);
-    gameType1ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-88), 218, 'Human vs Human' , { font: '22px Arial', fill: '#000000' });
+    gameType1Button = game.add.button(((gameOptions.gameWidth/2)-95), 170, 'button', gameType1Click, this);
+    gameType1ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-88), 178, 'Human vs Human' , { font: '22px Arial', fill: '#000000' });
     function gameType1Click() {
       gameType = 1;
       game.state.start('gameType1');
     }
-    playAgainButton = game.add.button(((gameOptions.gameWidth/2)-95), 300, 'button', playAgainClick, this);
-    playAgainButtonLabel = game.add.text(((gameOptions.gameWidth/2)-50), 308, 'Play Again' , { font: '22px Arial', fill: '#000000' });
-    function playAgainClick() {
-      game.stage.background.visible =! game.stage.background.visible;
+    gameType2Button = game.add.button(((gameOptions.gameWidth/2)-95), 250, 'button', gameType2Click, this);
+    gameType2ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-88), 258, 'Human vs Human' , { font: '22px Arial', fill: '#000000' });
+    function gameType2Click() {
+      gameType = 2;
+      game.state.start('gameType2');
+    }
+    gameType3Button = game.add.button(((gameOptions.gameWidth/2)-95), 330, 'button', gameType3Click, this);
+    gameType3ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-88), 338, 'Human vs Human' , { font: '22px Arial', fill: '#000000' });
+    function gameType3Click() {
+      gameType = 3;
+      game.state.start('gameType3');
+    }
+    gameType4Button = game.add.button(((gameOptions.gameWidth/2)-95), 410, 'button', gameType4Click, this);
+    gameType4ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-88), 418, 'Human vs Human' , { font: '22px Arial', fill: '#000000' });
+    function gameType4Click() {
+      gameType = 4;
+      game.state.start('gameType4');
     }
   }
 }
@@ -94,6 +152,15 @@ var winState = {
     function playAgainClick() {
       if(gameType==1) {
         game.state.start('gameType1');
+      }
+      else if(gameType==2) {
+        game.state.start('gameType2');
+      }
+      else if(gameType==3) {
+        game.state.start('gameType3');
+      }
+      else if(gameType==4) {
+        game.state.start('gameType4');
       }
     }
     gameState.player = 1;
