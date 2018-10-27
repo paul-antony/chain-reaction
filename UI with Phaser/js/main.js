@@ -23,7 +23,7 @@ var gameOptions = {
   cellSize: 58,
   cellPadding: 2,
   orbRadius: 20,
-  colors: [0xff0000, 0x00ff00, 0x000000],
+  colors: [0xff0000, 0x00ff00, 0x3498db],
   burstTime: 100,
 }
 
@@ -35,7 +35,8 @@ var game = new Phaser.Game(gameOptions.gameWidth, gameOptions.gameHeight, Phaser
 
 var winState = {
   preload: function() {
-    game.stage.backgroundColor = gameOptions.colors[3];
+    this.load.image('button', 'assets/button.png');
+    game.stage.backgroundColor = gameOptions.colors[2];
   },
   create: function() {
     if(win==1 && gameType==1) {
@@ -43,6 +44,16 @@ var winState = {
     }
     else if(win==-1 && gameType==1) {
       var winLabel = game.add.text(25, 80, 'Player 2 wins!' , { font: '50px Arial', fill: '#ffffff' });
+    }
+    mainMenuButton = game.add.button(((gameOptions.gameWidth/2)-95), 210, 'button', mainMenuClick, this);
+    mainMenuButtonLabel = game.add.text(((gameOptions.gameWidth/2)-50), 218, 'Main Menu' , { font: '22px Arial', fill: '#000000' });
+    function mainMenuClick() {
+      game.stage.background.visible =! game.stage.background.visible;
+    }
+    playAgainButton = game.add.button(((gameOptions.gameWidth/2)-95), 300, 'button', playAgainClick, this);
+    playAgainButtonLabel = game.add.text(((gameOptions.gameWidth/2)-50), 308, 'Play Again' , { font: '22px Arial', fill: '#000000' });
+    function playAgainClick() {
+      game.stage.background.visible =! game.stage.background.visible;
     }
   }
 }
