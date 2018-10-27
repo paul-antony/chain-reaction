@@ -35,67 +35,116 @@ function preload() {
   game.stage.backgroundColor = gameOptions.colors[0];
 }
 
+var createFlag = 0;
+
 function create() {
   for(let yPos=0; yPos<(gameOptions.gameHeight-gameOptions.cellPadding); yPos+=(gameOptions.cellPadding+gameOptions.cellSize)) {
     for(let xPos=0; xPos<(gameOptions.gameWidth-gameOptions.cellPadding); xPos+=(gameOptions.cellPadding+gameOptions.cellSize)) {
       game.add.image((xPos+gameOptions.cellPadding), (yPos+gameOptions.cellPadding), 'cell');
     }
   }
-  game.input.onDown.add(updateGameState, this);
+  if(createFlag==0) {
+    createFlag = 1;
+    game.input.onDown.add(updateGameState, this);
+  }
 }
 
 function updateGameState() {
   let xClickedPos = game.input.mousePointer.x;
   let yClickedPos = game.input.mousePointer.y;
-  let flag = -1;
+  let validFlag = -1;
   let rowIndex = 0;
   for(let yPos=0; yPos<(gameOptions.gameHeight-gameOptions.cellPadding); yPos+=(gameOptions.cellPadding+gameOptions.cellSize)) {
     let colIndex = 0;
     for(let xPos=0; xPos<(gameOptions.gameWidth-gameOptions.cellPadding); xPos+=(gameOptions.cellPadding+gameOptions.cellSize)) {
-      if(xClickedPos>=(xPos+gameOptions.cellPadding) && xClickedPos<=(xPos+gameOptions.cellPadding+gameOptions.cellSize) && yClickedPos>=(yPos+gameOptions.cellPadding) && yClickedPos<=(yPos+gameOptions.cellPadding+gameOptions.cellSize)) {
+      if(xClickedPos>=(xPos+gameOptions.cellPadding+1) && xClickedPos<=(xPos+gameOptions.cellPadding+gameOptions.cellSize) && yClickedPos>=(yPos+gameOptions.cellPadding+2) && yClickedPos<=(yPos+gameOptions.cellPadding+gameOptions.cellSize+1)) {
         if(gameState.player==1 && gameState.board[rowIndex][colIndex]>=0) {
           gameState.board[rowIndex][colIndex]++;
-          flag = 0;
+          validFlag = 1;
         }
         else if(gameState.player==-1 && gameState.board[rowIndex][colIndex]<=0) {
           gameState.board[rowIndex][colIndex]--;
-          flag = 0;
+          validFlag = 1;
         }
         else {
-          flag = 1;
+          validFlag = 0;
         }
-        checkBurst(rowIndex, colIndex);
+        if(validFlag==1) {
+          if(Math.abs(gameState.board[rowIndex][colIndex])>=criticalMass(rowIndex, colIndex)) {
+            checkBurst(rowIndex, colIndex);
+          }
+        }
+        break;
       }
       colIndex++;
     }
     rowIndex++;
+    if(validFlag==0 || validFlag==1) {
+      break;
+    }
   }
-  if(flag==0) {
-      updateBoard();
-      gameState.player *= -1;
-      if(gameState.player==1) {
-        game.stage.backgroundColor = gameOptions.colors[0];
-      }
-      else {
-        game.stage.backgroundColor = gameOptions.colors[1];
-      }
+  if(validFlag==1) {
+    updateBoard();
+    validFlag = -1;
+    gameState.player *= -1;
+    if(gameState.player==1) {
+      game.stage.backgroundColor = gameOptions.colors[0];
+    }
+    else {
+      game.stage.backgroundColor = gameOptions.colors[1];
+    }
   }
   console.log(gameState.board);
 }
 
 function checkBurst(rowIndex, colIndex) {
-  if(((rowIndex==0 && colIndex==0) || (rowIndex==0 && colIndex==(gameState.board[rowIndex].length-1)) || (rowIndex==(gameState.board.length-1) && colIndex==0) || (rowIndex==(gameState.board[rowIndex].length-1) && colIndex==(gameState.board.length-1))) && (gameState.board[rowIndex][colIndex]==2 || gameState.board[rowIndex][colIndex]==-2)) {
-
-  }
-  else if((rowIndex==0 || colIndex==0 || rowIndex==(gameState.board.length-1) || colIndex==(gameState.board[rowIndex].length-1)) && (gameState.board[rowIndex][colIndex]==3 || gameState.board[rowIndex][colIndex]==-3)) {
-
-  }
-  else if(gameState.board[rowIndex][colIndex]==4 || gameState.board[rowIndex][colIndex]==-4) {
-
+  let unstableCells = [];
+  unstableCells.push([rowIndex, colIndex]);
+  while(unstableCells.length>0) {
+    updateBoard();
+    let unstableCellIndex = unstableCells.pop();
+    if(Math.abs(gameState.board[unstableCellIndex[0]][unstableCellIndex[1]])>=criticalMass(unstableCellIndex[0], unstableCellIndex[1])) {
+      gameState.board[unstableCellIndex[0]][unstableCellIndex[1]] -= (gameState.player * criticalMass(unstableCellIndex[0], unstableCellIndex[1]));
+      let neighbors = getNeighbors(unstableCellIndex[0], unstableCellIndex[1]);
+      for(let index=0; index<neighbors.length; ++index) {
+        gameState.board[neighbors[index][0]][neighbors[index][1]] = gameState.player * Math.abs(gameState.board[neighbors[index][0]][neighbors[index][1]] + 1);
+        unstableCells.push(neighbors[index]);
+      }
+    }
   }
 }
 
+function getNeighbors(rowIndex, colIndex) {
+  let neighbors = [];
+  if((rowIndex-1)>=0) {
+    neighbors.push([rowIndex-1, colIndex]);
+  }
+  if((rowIndex+1)<gameState.board.length) {
+    neighbors.push([rowIndex+1, colIndex]);
+  }
+  if((colIndex-1)>=0) {
+    neighbors.push([rowIndex, colIndex-1]);
+  }
+  if((colIndex+1)<gameState.board[rowIndex].length) {
+    neighbors.push([rowIndex, colIndex+1]);
+  }
+  return neighbors;
+}
+
+function criticalMass(rowIndex, colIndex) {
+    if((rowIndex==0 && colIndex==0) || (rowIndex==(gameState.board.length-1) && colIndex==0) || (rowIndex==0 && colIndex==(gameState.board[rowIndex].length-1)) || (rowIndex==(gameState.board.length-1) && colIndex==(gameState.board[rowIndex].length-1))) {
+      return 2;
+    }
+    else if(rowIndex==0 || rowIndex==(gameState.board.length-1) || colIndex==0 || colIndex==(gameState.board[rowIndex].length-1)) {
+      return 3;
+    }
+    else {
+      return 4;
+    }
+}
+
 function updateBoard() {
+  create();
   var graphics = game.add.graphics(0, 0);
   for(let rowIndex=0; rowIndex<gameState.board.length; ++rowIndex) {
     for(let colIndex=0; colIndex<gameState.board[colIndex].length; ++colIndex) {
