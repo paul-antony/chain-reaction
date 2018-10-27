@@ -13,9 +13,9 @@ import copy
 
 
 class Board():
-	#
-	#
-	# Function Name:    __init__()
+    #
+    #
+    # Function Name:    __init__()
     # Input:            1) self --> the object of the class
     #                   2) m --> the number of rows for the board
     #                   3) n --> the number of columns for the board
