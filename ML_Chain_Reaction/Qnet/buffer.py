@@ -2,8 +2,8 @@
 
 # buffer type (board(list), action(1d index), board_q(list), player(int),invalid_list(list of 1d_index of invalid move), reward(int))
 import random
-alpha = 0.01
-gama = 0.09
+alpha = 0.09
+gama = 0.99
 
 class replay_byffer:
 
@@ -201,4 +201,4 @@ class replay_byffer:
 
 
 if __name__ == "__main__":
-	print(replay_byffer.index_list_converter([[1,1],[2,2],[3,4]]))
+	print(replay_byffer.index_list_converter([[1,1],[2,2],[3,4]],1))

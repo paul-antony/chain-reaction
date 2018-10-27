@@ -9,14 +9,14 @@ network = QNetwork(input_dim, output_dim, lr, epsilon, epsilon_min, epsilon_deca
 network.load('weight_data.h5')
 
 board = Board()
-
+no_of_games = 100
 
 def alpha(depth = 2):
 
-	no_of_games = 1
+	games = no_of_games
 	win = 0
 
-	while no_of_games> 0:#no of games to run
+	while games> 0:#no of games to run
 		game_over = False
 
 		while game_over == False:#game loop
@@ -40,8 +40,8 @@ def alpha(depth = 2):
 				break
 
 		board.reset()
-		no_of_games = no_of_games -1
-		print("alpha_",depth,"":",no_of_games)
+		games = games -1
+		print("alpha_",depth,":",games)
 		
 	return win
 
@@ -50,10 +50,10 @@ def alpha(depth = 2):
 
 def rand():
 
-	no_of_games = 100
+	games = no_of_games
 	win = 0
 
-	while no_of_games> 0:#no of games to run
+	while games> 0:#no of games to run
 		game_over = False
 
 		while game_over == False:#game loop
@@ -76,7 +76,7 @@ def rand():
 				win = win+1
 				break
 		board.reset()
-		no_of_games = no_of_games -1
-		print("random:",no_of_games)
+		games = games -1
+		print("random:",games)
 		
 	return win

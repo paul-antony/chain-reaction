@@ -123,12 +123,12 @@ class QNetwork:
 		for i in range(0,len(input)):
 			output.append([input[i],i])
 		if rev == 1:
-			output.sort(key = lambda x: x[0],reverse = True)
-		else:
 			output.sort(key = lambda x: x[0],reverse = False)
+		else:
+			output.sort(key = lambda x: x[0],reverse = True)
 		return output
 
 
 
 if __name__ == "__main__":
-	print(QNetwork.sort([10,3,-200,6,3.14,-3.323],False))
+	print(QNetwork.sort([10,3,-200,6,3.14,-3.323],1))
