@@ -23,19 +23,19 @@ var gameOptions = {
   cellSize: 58,
   cellPadding: 2,
   orbRadius: 20,
-  colors: [0xff0000, 0x00ff00]
+  colors: [0xff0000, 0x00ff00],
+  burstTime: 100,
+  gameType: 1
 }
 
 var cell = [[]];
 
-var game = new Phaser.Game(gameOptions.gameWidth, gameOptions.gameHeight, Phaser.AUTO, 'game-section', { preload: preload, create: create });
+var game = new Phaser.Game(gameOptions.gameWidth, gameOptions.gameHeight, Phaser.AUTO, 'game-section', { preload: preload, create: create, update: update });
 
 function preload() {
   this.load.image('cell', 'assets/cell.png');
   game.stage.backgroundColor = gameOptions.colors[0];
 }
-
-var createFlag = 0;
 
 function create() {
   for(let yPos=0; yPos<(gameOptions.gameHeight-gameOptions.cellPadding); yPos+=(gameOptions.cellPadding+gameOptions.cellSize)) {
@@ -43,13 +43,18 @@ function create() {
       game.add.image((xPos+gameOptions.cellPadding), (yPos+gameOptions.cellPadding), 'cell');
     }
   }
-  if(createFlag==0) {
-    createFlag = 1;
-    game.input.onDown.add(updateGameState, this);
-  }
 }
 
-function updateGameState() {
+function update() {
+  game.input.onDown.add(updateGameState, this);
+  updateBoard();
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function updateGameState() {
   let xClickedPos = game.input.mousePointer.x;
   let yClickedPos = game.input.mousePointer.y;
   let validFlag = -1;
@@ -71,7 +76,20 @@ function updateGameState() {
         }
         if(validFlag==1) {
           if(Math.abs(gameState.board[rowIndex][colIndex])>=criticalMass(rowIndex, colIndex)) {
-            checkBurst(rowIndex, colIndex);
+            let unstableCells = [];
+            unstableCells.push([rowIndex, colIndex]);
+            while(unstableCells.length>0) {
+              await sleep(gameOptions.burstTime);
+              let unstableCellIndex = unstableCells.shift();
+              if(Math.abs(gameState.board[unstableCellIndex[0]][unstableCellIndex[1]])>=criticalMass(unstableCellIndex[0], unstableCellIndex[1])) {
+                gameState.board[unstableCellIndex[0]][unstableCellIndex[1]] -= (gameState.player * criticalMass(unstableCellIndex[0], unstableCellIndex[1]));
+                let neighbors = getNeighbors(unstableCellIndex[0], unstableCellIndex[1]);
+                for(let index=0; index<neighbors.length; ++index) {
+                  gameState.board[neighbors[index][0]][neighbors[index][1]] = gameState.player * (Math.abs(gameState.board[neighbors[index][0]][neighbors[index][1]]) + 1);
+                  unstableCells.push(neighbors[index]);
+                }
+              }
+            }
           }
         }
         break;
@@ -84,7 +102,6 @@ function updateGameState() {
     }
   }
   if(validFlag==1) {
-    updateBoard();
     validFlag = -1;
     gameState.player *= -1;
     if(gameState.player==1) {
@@ -95,23 +112,6 @@ function updateGameState() {
     }
   }
   console.log(gameState.board);
-}
-
-function checkBurst(rowIndex, colIndex) {
-  let unstableCells = [];
-  unstableCells.push([rowIndex, colIndex]);
-  while(unstableCells.length>0) {
-    updateBoard();
-    let unstableCellIndex = unstableCells.pop();
-    if(Math.abs(gameState.board[unstableCellIndex[0]][unstableCellIndex[1]])>=criticalMass(unstableCellIndex[0], unstableCellIndex[1])) {
-      gameState.board[unstableCellIndex[0]][unstableCellIndex[1]] -= (gameState.player * criticalMass(unstableCellIndex[0], unstableCellIndex[1]));
-      let neighbors = getNeighbors(unstableCellIndex[0], unstableCellIndex[1]);
-      for(let index=0; index<neighbors.length; ++index) {
-        gameState.board[neighbors[index][0]][neighbors[index][1]] = gameState.player * Math.abs(gameState.board[neighbors[index][0]][neighbors[index][1]] + 1);
-        unstableCells.push(neighbors[index]);
-      }
-    }
-  }
 }
 
 function getNeighbors(rowIndex, colIndex) {
