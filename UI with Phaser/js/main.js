@@ -29,26 +29,37 @@ var gameOptions = {
 
 var win;
 
-var gameType = 1;
+var gameType = 0;
 
-var game = new Phaser.Game(gameOptions.gameWidth, gameOptions.gameHeight, Phaser.AUTO, 'game-section', { preload: preload, create: create, update: update });
+var game = new Phaser.Game(gameOptions.gameWidth, gameOptions.gameHeight, Phaser.AUTO, 'game-section', { preload: preload, create: create });
 
-var winState = {
+var gameType1State = {
+  preload: function() {
+    preload();
+  },
+  create: function() {
+    create();
+  },
+  update: function() {
+    game.input.onDown.add(updateGameState, this);
+    updateBoard();
+  }
+}
+
+game.state.add('gameType1', gameType1State);
+
+var menuState = {
   preload: function() {
     this.load.image('button', 'assets/button.png');
     game.stage.backgroundColor = gameOptions.colors[2];
   },
   create: function() {
-    if(win==1 && gameType==1) {
-      var winLabel = game.add.text(25, 80, 'Player 1 wins!' , { font: '50px Arial', fill: '#ffffff' });
-    }
-    else if(win==-1 && gameType==1) {
-      var winLabel = game.add.text(25, 80, 'Player 2 wins!' , { font: '50px Arial', fill: '#ffffff' });
-    }
-    mainMenuButton = game.add.button(((gameOptions.gameWidth/2)-95), 210, 'button', mainMenuClick, this);
-    mainMenuButtonLabel = game.add.text(((gameOptions.gameWidth/2)-50), 218, 'Main Menu' , { font: '22px Arial', fill: '#000000' });
-    function mainMenuClick() {
-      game.stage.background.visible =! game.stage.background.visible;
+    var menuLabel = game.add.text(42, 80, 'Chain Reaction' , { font: '40px Arial', fill: '#ffffff' });
+    gameType1Button = game.add.button(((gameOptions.gameWidth/2)-95), 210, 'button', gameType1Click, this);
+    gameType1ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-88), 218, 'Human vs Human' , { font: '22px Arial', fill: '#000000' });
+    function gameType1Click() {
+      gameType = 1;
+      game.state.start('gameType1');
     }
     playAgainButton = game.add.button(((gameOptions.gameWidth/2)-95), 300, 'button', playAgainClick, this);
     playAgainButtonLabel = game.add.text(((gameOptions.gameWidth/2)-50), 308, 'Play Again' , { font: '22px Arial', fill: '#000000' });
@@ -58,10 +69,46 @@ var winState = {
   }
 }
 
+game.state.add('menu', menuState);
+game.state.start('menu');
+
+var winState = {
+  preload: function() {
+    this.load.image('button', 'assets/button.png');
+    game.stage.backgroundColor = gameOptions.colors[2];
+  },
+  create: function() {
+    if(win==1 && gameType==1) {
+      let winLabel = game.add.text(25, 80, 'Player 1 wins!' , { font: '50px Arial', fill: '#ffffff' });
+    }
+    else if(win==-1 && gameType==1) {
+      let winLabel = game.add.text(25, 80, 'Player 2 wins!' , { font: '50px Arial', fill: '#ffffff' });
+    }
+    menuButton = game.add.button(((gameOptions.gameWidth/2)-95), 210, 'button', menuClick, this);
+    menuButtonLabel = game.add.text(((gameOptions.gameWidth/2)-50), 218, 'Main Menu' , { font: '22px Arial', fill: '#000000' });
+    function menuClick() {
+      game.state.start('menu');
+    }
+    playAgainButton = game.add.button(((gameOptions.gameWidth/2)-95), 300, 'button', playAgainClick, this);
+    playAgainButtonLabel = game.add.text(((gameOptions.gameWidth/2)-50), 308, 'Play Again' , { font: '22px Arial', fill: '#000000' });
+    function playAgainClick() {
+      if(gameType==1) {
+        game.state.start('gameType1');
+      }
+    }
+    gameState.player = 1;
+    for(let rowIndex=0; rowIndex<gameState.board.length; ++rowIndex) {
+      for(let colIndex=0; colIndex<gameState.board[rowIndex].length; ++colIndex) {
+        gameState.board[rowIndex][colIndex] = 0;
+      }
+    }
+  }
+}
+
 game.state.add('win', winState);
 
 function preload() {
-  this.load.image('cell', 'assets/cell.png');
+  game.load.image('cell', 'assets/cell.png');
   game.stage.backgroundColor = gameOptions.colors[0];
 }
 
@@ -71,11 +118,6 @@ function create() {
       game.add.image((xPos+gameOptions.cellPadding), (yPos+gameOptions.cellPadding), 'cell');
     }
   }
-}
-
-function update() {
-  game.input.onDown.add(updateGameState, this);
-  updateBoard();
 }
 
 async function updateGameState() {
