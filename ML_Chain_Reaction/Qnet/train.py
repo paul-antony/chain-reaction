@@ -23,13 +23,12 @@ def train():
 
 		while game_over == False:#game loop
 
-			#random player part
 			buffer_entry = []
 
 			board_state = board.list()
 			player = board.player
 
-			action = alpha_beta(board)
+			action = alpha_beta(board,1)
 
 			Q_value = network.qvalue(board)
 			
@@ -43,7 +42,7 @@ def train():
 			board.move(action)
 			value = board.cal_heuristics()
 			if value in (200,-200):
-				buffer_entry.append(-1*board.player*100)
+				buffer_entry.append(-1*board.player*1)
 				buffer.push(copy.deepcopy(buffer_entry))
 				game_over = True
 				break
@@ -68,7 +67,7 @@ def train():
 			board.move(action)
 			value = board.cal_heuristics()
 			if value in (200,-200):
-				buffer_entry.append(-1*board.player*100)
+				buffer_entry.append(-1*board.player*1)
 				buffer.push(copy.deepcopy(buffer_entry))
 				game_over = True
 				break

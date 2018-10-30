@@ -10,10 +10,11 @@ while True:
 	data.append(rand())
 	data.append(alpha(1))
 	data.append(alpha(2))
+	write_to_csv(data,"pastdata.csv")
 
 	train()
 
-	write_to_csv(data,"pastdata.csv")
+	
 
 
 	

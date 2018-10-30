@@ -2,9 +2,7 @@
 import copy
 import random
 
-def alpha_beta(b,depth = 2):
-	alpha = -300
-	beta = 300
+def alpha_beta(b,depth = 2,alpha,beta):
 	moves = b.valid_move()
 	random.shuffle(moves)
 	player = b.player
@@ -15,7 +13,7 @@ def alpha_beta(b,depth = 2):
 	for pos in moves:
 		board = copy.deepcopy(b)
 		board.move(pos)
-		b_score = max(b_score,min_value(board,depth-1,alpha,beta,player))
+		b_score = max(b_score,min_value(board,depth-1,alpha,beta,player)
 
     
 		if alpha < b_score:
@@ -77,3 +75,12 @@ def min_value(b,depth,alpha,beta,player):
 			break
 
 	return b_score
+
+
+
+
+
+
+
+
+

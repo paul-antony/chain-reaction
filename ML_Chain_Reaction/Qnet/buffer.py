@@ -2,7 +2,7 @@
 
 # buffer type (board(list), action(1d index), board_q(list), player(int),invalid_list(list of 1d_index of invalid move), reward(int))
 import random
-alpha = 0.09
+alpha = 0.1
 gama = 0.99
 
 class replay_byffer:
@@ -41,7 +41,7 @@ class replay_byffer:
 			x.append(entry[0])
 			output = entry[2]
 			
-			if entry[5] in (100,-100):
+			if entry[5] in (1,-1):
 				output[entry[1]] = entry[5]
 
 			else:
@@ -64,7 +64,7 @@ class replay_byffer:
 	def illegal_preprocess(input,index,player):
 		
 		for i in index:
-			input[i] = player * -1 * 200
+			input[i] = player * -1 
 
 		return input
 
@@ -165,7 +165,7 @@ class replay_byffer:
 	@staticmethod
 	def random_selector(input):
 		random.shuffle(input)
-		return input[::2]
+		return input
 
 
 	#converts 2d index to id index

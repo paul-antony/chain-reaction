@@ -107,6 +107,13 @@ class QNetwork:
 
 		return self.act_convert(action)
 
+
+
+	def act2(self,board):
+		action_reward = self.model.predict(np.array([board.list()]))[0].tolist()
+
+
+
 	
 	def eps_update(self):
 		if self.epsilon > self.epsilon_min:
@@ -114,7 +121,7 @@ class QNetwork:
 
 	
 	def train(self,x,y):
-		self.model.fit(np.array(x), np.array(y), epochs=1, verbose=0)
+		self.model.fit(np.array(x), np.array(y), epochs=1, verbose=0, batch_size = 1)
 
 
 	@staticmethod
@@ -122,7 +129,7 @@ class QNetwork:
 		output = []
 		for i in range(0,len(input)):
 			output.append([input[i],i])
-		if rev == 1:
+		if rev == -1:
 			output.sort(key = lambda x: x[0],reverse = False)
 		else:
 			output.sort(key = lambda x: x[0],reverse = True)

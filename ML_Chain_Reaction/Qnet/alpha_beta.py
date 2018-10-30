@@ -3,15 +3,11 @@ import copy
 import random
 
 def alpha_beta(b,depth = 2):
-	return max_value(b,depth,-300,300)[1]
-
-def max_value(b,depth,alpha,beta):
+	alpha = -300
+	beta = 300
 	moves = b.valid_move()
 	random.shuffle(moves)
-	if len(moves) == 0:
-		return -1*b.cal_heuristics(),(0,0)
-	if depth == 0:
-		return -1*b.cal_heuristics(),(0,0)
+	player = b.player
 
 	b_score = -300
 	best_move = moves[0]
@@ -19,7 +15,7 @@ def max_value(b,depth,alpha,beta):
 	for pos in moves:
 		board = copy.deepcopy(b)
 		board.move(pos)
-		b_score = max(b_score,min_value(board,depth-1,alpha,beta)[0])
+		b_score = max(b_score,min_value(board,depth-1,alpha,beta,player))
 
     
 		if alpha < b_score:
@@ -29,31 +25,55 @@ def max_value(b,depth,alpha,beta):
 		if alpha >= beta:
 			break
 
-	return b_score,best_move
+	return best_move
 
 
 
-def min_value(b,depth,alpha,beta):
+
+
+def max_value(b,depth,alpha,beta,player):
 	moves = b.valid_move()
-	random.shuffle(moves)
-	if len(moves) == 0:
-		return -1*b.cal_heuristics(),(0,0)
-	if depth == 0:
-		return -1*b.cal_heuristics(),(0,0)
 
-	b_score = 300
-	best_move = moves[0]
+	if len(moves) == 0:
+		return b.cal_heuristics(player)
+	if depth == 0:
+		return b.cal_heuristics(player)
+
+	b_score = -300
     
 	for pos in moves:
 		board = copy.deepcopy(b)
 		board.move(pos)
-		b_score = min(b_score,max_value(board,depth-1,alpha,beta)[0])
+		b_score = max(b_score,min_value(board,depth-1,alpha,beta,player))
+
     
-		if beta > b_score:
-			beta = b_score
-			best_move = pos
+		alpha = max(alpha,b_score)
 
 		if alpha >= beta:
 			break
 
-	return b_score,best_move
+	return b_score
+
+
+
+def min_value(b,depth,alpha,beta,player):
+	moves = b.valid_move()
+
+	if len(moves) == 0:
+		return b.cal_heuristics(player)
+	if depth == 0:
+		return b.cal_heuristics(player)
+
+	b_score = 300
+    
+	for pos in moves:
+		board = copy.deepcopy(b)
+		board.move(pos)
+		b_score = min(b_score,max_value(board,depth-1,alpha,beta,player))
+
+		beta = min(beta,b_score)
+
+		if alpha >= beta:
+			break
+
+	return b_score
