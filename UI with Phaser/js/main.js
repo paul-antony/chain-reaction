@@ -14,8 +14,12 @@ var gameState = {
 }
 
 var gameOptions = {
-  gameWidth: 362,
-  gameHeight: 542,
+  gameWidth: 670,
+  gameHeight: 562,
+  boardWidth: 362,
+  boardHeight: 542,
+  boardTopPadding: 10,
+  boardLeftPadding: 10,
   boardSize: {
     rows: 9,
     cols: 6
@@ -27,9 +31,9 @@ var gameOptions = {
   burstTime: 100,
 }
 
-var win;
-
 var gameType = 0;
+
+var winner;
 
 var game = new Phaser.Game(gameOptions.gameWidth, gameOptions.gameHeight, Phaser.AUTO, 'game-section', { preload: preload, create: create });
 
@@ -99,9 +103,9 @@ var menuState = {
     game.stage.backgroundColor = gameOptions.colors[2];
   },
   create: function() {
-    var menuLabel = game.add.text(42, 80, 'Chain Reaction' , { font: '40px Arial', fill: '#ffffff' });
-    gameType1Button = game.add.button(((gameOptions.gameWidth/2)-95), 170, 'button', gameType1Click, this);
-    gameType1ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-88), 178, 'Human vs Human' , { font: '22px Arial', fill: '#000000' });
+    var menuLabel = game.add.text(42, 60, 'Chain Reaction' , { font: '40px Arial', fill: '#ffffff' });
+    gameType1Button = game.add.button(((gameOptions.gameWidth/2)-95), 170, 'button', gameType1Click, this).scale.setTo(1.1, 1.1);
+    gameType1ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-78), 180, 'Human vs Human' , { font: '22px Arial', fill: '#000000' });
     function gameType1Click() {
       gameType = 1;
       game.state.start('gameType1');
@@ -136,10 +140,10 @@ var winState = {
     game.stage.backgroundColor = gameOptions.colors[2];
   },
   create: function() {
-    if(win==1 && gameType==1) {
+    if(winner==1 && gameType==1) {
       let winLabel = game.add.text(25, 80, 'Player 1 wins!' , { font: '50px Arial', fill: '#ffffff' });
     }
-    else if(win==-1 && gameType==1) {
+    else if(winner==-1 && gameType==1) {
       let winLabel = game.add.text(25, 80, 'Player 2 wins!' , { font: '50px Arial', fill: '#ffffff' });
     }
     menuButton = game.add.button(((gameOptions.gameWidth/2)-95), 210, 'button', menuClick, this);
@@ -175,13 +179,17 @@ var winState = {
 game.state.add('win', winState);
 
 function preload() {
+  winner = 0;
   game.load.image('cell', 'assets/cell.png');
-  game.stage.backgroundColor = gameOptions.colors[0];
+  game.stage.backgroundColor = gameOptions.colors[2];
+  let graphics = game.add.graphics(0, 0);
+  graphics.beginFill(gameOptions.colors[0], 1);
+  graphics.drawRect(gameOptions.boardLeftPadding, gameOptions.boardTopPadding, gameOptions.boardWidth, gameOptions.boardHeight);
 }
 
 function create() {
-  for(let yPos=0; yPos<(gameOptions.gameHeight-gameOptions.cellPadding); yPos+=(gameOptions.cellPadding+gameOptions.cellSize)) {
-    for(let xPos=0; xPos<(gameOptions.gameWidth-gameOptions.cellPadding); xPos+=(gameOptions.cellPadding+gameOptions.cellSize)) {
+  for(let yPos=gameOptions.boardTopPadding; yPos<(gameOptions.boardTopPadding+gameOptions.boardHeight-gameOptions.cellPadding); yPos+=(gameOptions.cellPadding+gameOptions.cellSize)) {
+    for(let xPos=gameOptions.boardLeftPadding; xPos<(gameOptions.boardLeftPadding+gameOptions.boardWidth-gameOptions.cellPadding); xPos+=(gameOptions.cellPadding+gameOptions.cellSize)) {
       game.add.image((xPos+gameOptions.cellPadding), (yPos+gameOptions.cellPadding), 'cell');
     }
   }
@@ -192,9 +200,9 @@ async function updateGameState() {
   let yClickedPos = game.input.mousePointer.y;
   let validFlag = -1;
   let rowIndex = 0;
-  for(let yPos=0; yPos<(gameOptions.gameHeight-gameOptions.cellPadding); yPos+=(gameOptions.cellPadding+gameOptions.cellSize)) {
+  for(let yPos=gameOptions.boardTopPadding; yPos<(gameOptions.boardTopPadding+gameOptions.boardHeight-gameOptions.cellPadding); yPos+=(gameOptions.cellPadding+gameOptions.cellSize)) {
     let colIndex = 0;
-    for(let xPos=0; xPos<(gameOptions.gameWidth-gameOptions.cellPadding); xPos+=(gameOptions.cellPadding+gameOptions.cellSize)) {
+    for(let xPos=gameOptions.boardLeftPadding; xPos<(gameOptions.boardLeftPadding+gameOptions.boardWidth-gameOptions.cellPadding); xPos+=(gameOptions.cellPadding+gameOptions.cellSize)) {
       if(xClickedPos>=(xPos+gameOptions.cellPadding+1) && xClickedPos<=(xPos+gameOptions.cellPadding+gameOptions.cellSize) && yClickedPos>=(yPos+gameOptions.cellPadding+2) && yClickedPos<=(yPos+gameOptions.cellPadding+gameOptions.cellSize+1)) {
         if(gameState.player==1 && gameState.board[rowIndex][colIndex]>=0) {
           gameState.board[rowIndex][colIndex]++;
@@ -212,7 +220,6 @@ async function updateGameState() {
             let unstableCells = [];
             unstableCells.push([rowIndex, colIndex]);
             while(unstableCells.length>0) {
-              await sleep(gameOptions.burstTime);
               let unstableCellIndex = unstableCells.shift();
               if(Math.abs(gameState.board[unstableCellIndex[0]][unstableCellIndex[1]])>=criticalMass(unstableCellIndex[0], unstableCellIndex[1])) {
                 gameState.board[unstableCellIndex[0]][unstableCellIndex[1]] -= (gameState.player * criticalMass(unstableCellIndex[0], unstableCellIndex[1]));
@@ -222,8 +229,9 @@ async function updateGameState() {
                   unstableCells.push(neighbors[index]);
                 }
               }
+              await sleep(gameOptions.burstTime);
+              checkWin();
             }
-            checkWin();
           }
         }
         break;
@@ -237,13 +245,17 @@ async function updateGameState() {
   }
   if(validFlag==1) {
     validFlag = -1;
-    gameState.player *= -1;
-    if(gameState.player==1) {
-      game.stage.backgroundColor = gameOptions.colors[0];
+    if(winner==0) {
+      gameState.player *= -1;
     }
-    else {
-      game.stage.backgroundColor = gameOptions.colors[1];
+    let graphics = game.add.graphics(0, 0);
+    if(gameState.player==1 && winner==0) {
+      graphics.beginFill(gameOptions.colors[0], 1);
     }
+    else if(gameState.player==-1 && winner==0) {
+      graphics.beginFill(gameOptions.colors[1], 1);
+    }
+    graphics.drawRect(gameOptions.boardLeftPadding, gameOptions.boardTopPadding, gameOptions.boardWidth, gameOptions.boardHeight);
   }
 }
 
@@ -282,6 +294,7 @@ function criticalMass(rowIndex, colIndex) {
 
 function checkWin() {
   let winChance;
+  let win;
   for(let rowIndex=0; rowIndex<gameState.board.length; ++rowIndex) {
     for(let colIndex=0; colIndex<gameState.board[rowIndex].length; ++colIndex) {
       if(gameState.board[rowIndex][colIndex]>0) {
@@ -315,31 +328,32 @@ function checkWin() {
     }
   }
   if(win==1 || win==-1) {
+    winner = win;
     game.state.start('win');
   }
 }
 
 function updateBoard() {
   create();
-  var graphics = game.add.graphics(0, 0);
+  let graphics = game.add.graphics(0, 0);
   for(let rowIndex=0; rowIndex<gameState.board.length; ++rowIndex) {
     for(let colIndex=0; colIndex<gameState.board[colIndex].length; ++colIndex) {
       if(gameState.board[rowIndex][colIndex]>0) {
         graphics.beginFill(gameOptions.colors[0], 1);
         switch(gameState.board[rowIndex][colIndex]) {
-          case 4: graphics.drawCircle((gameOptions.cellPadding+gameOptions.cellSize)*(colIndex)+gameOptions.cellPadding+39, (gameOptions.cellPadding+gameOptions.cellSize)*(rowIndex)+gameOptions.cellPadding+39, gameOptions.orbRadius);
-          case 3: graphics.drawCircle((gameOptions.cellPadding+gameOptions.cellSize)*(colIndex)+gameOptions.cellPadding+19, (gameOptions.cellPadding+gameOptions.cellSize)*(rowIndex)+gameOptions.cellPadding+39, gameOptions.orbRadius);
-          case 2: graphics.drawCircle((gameOptions.cellPadding+gameOptions.cellSize)*(colIndex)+gameOptions.cellPadding+39, (gameOptions.cellPadding+gameOptions.cellSize)*(rowIndex)+gameOptions.cellPadding+19, gameOptions.orbRadius);
-          case 1: graphics.drawCircle((gameOptions.cellPadding+gameOptions.cellSize)*(colIndex)+gameOptions.cellPadding+19, (gameOptions.cellPadding+gameOptions.cellSize)*(rowIndex)+gameOptions.cellPadding+19, gameOptions.orbRadius);
+          case 4: graphics.drawCircle(gameOptions.boardLeftPadding+(gameOptions.cellPadding+gameOptions.cellSize)*(colIndex)+gameOptions.cellPadding+39, gameOptions.boardTopPadding+(gameOptions.cellPadding+gameOptions.cellSize)*(rowIndex)+gameOptions.cellPadding+39, gameOptions.orbRadius);
+          case 3: graphics.drawCircle(gameOptions.boardLeftPadding+(gameOptions.cellPadding+gameOptions.cellSize)*(colIndex)+gameOptions.cellPadding+19, gameOptions.boardTopPadding+(gameOptions.cellPadding+gameOptions.cellSize)*(rowIndex)+gameOptions.cellPadding+39, gameOptions.orbRadius);
+          case 2: graphics.drawCircle(gameOptions.boardLeftPadding+(gameOptions.cellPadding+gameOptions.cellSize)*(colIndex)+gameOptions.cellPadding+39, gameOptions.boardTopPadding+(gameOptions.cellPadding+gameOptions.cellSize)*(rowIndex)+gameOptions.cellPadding+19, gameOptions.orbRadius);
+          case 1: graphics.drawCircle(gameOptions.boardLeftPadding+(gameOptions.cellPadding+gameOptions.cellSize)*(colIndex)+gameOptions.cellPadding+19, gameOptions.boardTopPadding+(gameOptions.cellPadding+gameOptions.cellSize)*(rowIndex)+gameOptions.cellPadding+19, gameOptions.orbRadius);
         }
       }
       else if(gameState.board[rowIndex][colIndex]<0) {
         graphics.beginFill(gameOptions.colors[1], 1);
         switch(gameState.board[rowIndex][colIndex]) {
-          case -4: graphics.drawCircle((gameOptions.cellPadding+gameOptions.cellSize)*(colIndex)+gameOptions.cellPadding+39, (gameOptions.cellPadding+gameOptions.cellSize)*(rowIndex)+gameOptions.cellPadding+39, gameOptions.orbRadius);
-          case -3: graphics.drawCircle((gameOptions.cellPadding+gameOptions.cellSize)*(colIndex)+gameOptions.cellPadding+19, (gameOptions.cellPadding+gameOptions.cellSize)*(rowIndex)+gameOptions.cellPadding+39, gameOptions.orbRadius);
-          case -2: graphics.drawCircle((gameOptions.cellPadding+gameOptions.cellSize)*(colIndex)+gameOptions.cellPadding+39, (gameOptions.cellPadding+gameOptions.cellSize)*(rowIndex)+gameOptions.cellPadding+19, gameOptions.orbRadius);
-          case -1: graphics.drawCircle((gameOptions.cellPadding+gameOptions.cellSize)*(colIndex)+gameOptions.cellPadding+19, (gameOptions.cellPadding+gameOptions.cellSize)*(rowIndex)+gameOptions.cellPadding+19, gameOptions.orbRadius);
+          case -4: graphics.drawCircle(gameOptions.boardLeftPadding+(gameOptions.cellPadding+gameOptions.cellSize)*(colIndex)+gameOptions.cellPadding+39, gameOptions.boardTopPadding+(gameOptions.cellPadding+gameOptions.cellSize)*(rowIndex)+gameOptions.cellPadding+39, gameOptions.orbRadius);
+          case -3: graphics.drawCircle(gameOptions.boardLeftPadding+(gameOptions.cellPadding+gameOptions.cellSize)*(colIndex)+gameOptions.cellPadding+19, gameOptions.boardTopPadding+(gameOptions.cellPadding+gameOptions.cellSize)*(rowIndex)+gameOptions.cellPadding+39, gameOptions.orbRadius);
+          case -2: graphics.drawCircle(gameOptions.boardLeftPadding+(gameOptions.cellPadding+gameOptions.cellSize)*(colIndex)+gameOptions.cellPadding+39, gameOptions.boardTopPadding+(gameOptions.cellPadding+gameOptions.cellSize)*(rowIndex)+gameOptions.cellPadding+19, gameOptions.orbRadius);
+          case -1: graphics.drawCircle(gameOptions.boardLeftPadding+(gameOptions.cellPadding+gameOptions.cellSize)*(colIndex)+gameOptions.cellPadding+19, gameOptions.boardTopPadding+(gameOptions.cellPadding+gameOptions.cellSize)*(rowIndex)+gameOptions.cellPadding+19, gameOptions.orbRadius);
         }
       }
     }
