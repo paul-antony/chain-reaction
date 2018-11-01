@@ -2,21 +2,21 @@
 import copy
 
 def minmax(b,depth=2):
-	return max_value(b,depth)[1]
+	return max_value(b,depth,b.player)[1]
 
-def max_value(b,depth):
+def max_value(b,depth,player):
 	moves = b.valid_move()
 	if len(moves) == 0:
-		return -1*b.cal_heuristics(),0
+		return b.cal_heuristics(player),0
 	if depth == 0:
-		return -1*b.cal_heuristics(),0
+		return b.cal_heuristics(player),0
 			
 	best_val = -300
 	best_move = moves[0]
 	for pos in moves:
 		board = copy.deepcopy(b)
 		board.move(pos)
-		b_score = min_value(board,depth-1)[0]
+		b_score = min_value(board,depth-1,player)[0]
 	
 		if best_val < b_score:
 			best_val = b_score
@@ -24,19 +24,19 @@ def max_value(b,depth):
 	    
 	return best_val,best_move
 			
-def min_value(b,depth):
+def min_value(b,depth,player):
 	moves = b.valid_move()
 	if len(moves) == 0:
-		return -1*b.cal_heuristics(),0
+		return b.cal_heuristics(player),0
 	if depth == 0:
-		return -1*b.cal_heuristics(),0
+		return b.cal_heuristics(player),0
 			
 	best_val = 300
 	best_move = moves[0]
 	for pos in moves:
 		board = copy.deepcopy(b)
 		board.move(pos)
-		b_score = max_value(board,depth-1)[0]
+		b_score = max_value(board,depth-1,player)[0]
 	
 	if best_val > b_score:
 		best_val = b_score
