@@ -10,6 +10,17 @@ var gameState = {
     [0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0]
+  ],
+  prevBoard: [
+    [0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0]
   ]
 }
 
@@ -28,12 +39,14 @@ var gameOptions = {
   cellPadding: 2,
   orbRadius: 20,
   colors: [0xff0000, 0x00ff00, 0x3498db],
-  burstTime: 100,
+  burstTime: 0,
 }
 
 var gameType = 0;
 
 var winner;
+
+undoClickCount = 2;
 
 var game = new Phaser.Game(gameOptions.gameWidth, gameOptions.gameHeight, Phaser.AUTO, 'game-section', { preload: preload, create: create });
 
@@ -43,9 +56,15 @@ var gameType1State = {
   },
   create: function() {
     create();
+    undoButton = game.add.button(((gameOptions.gameWidth/2)+48), 472, 'button', undoClick, this, 1, 0).scale.setTo(0.6, 1);
+    undoButtonLabel = game.add.text(((gameOptions.gameWidth/2)+74), 480, 'UNDO' , { font: '22px Arial', fill: '#000000' });
+    gameLabel = game.add.text(((gameOptions.gameWidth/2)+88), 30, 'Chain Reaction' , { font: '28px Arial', fill: '#ffffff' });
+    player1Label = game.add.text(((gameOptions.gameWidth/2)+48), 90, 'Player 1: Human 1' , { font: '20px Arial', fill: '#ffffff' });
+    player2Label = game.add.text(((gameOptions.gameWidth/2)+48), 125, 'Player 2: Human 2' , { font: '20px Arial', fill: '#ffffff' });
+    currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Human 1' , { font: '20px Arial', fill: '#ffffff' });
+    game.input.onDown.add(updateGameState, this);
   },
   update: function() {
-    game.input.onDown.add(updateGameState, this);
     updateBoard();
   }
 }
@@ -99,31 +118,31 @@ game.state.add('gameType4', gameType4State);
 
 var menuState = {
   preload: function() {
-    this.load.image('button', 'assets/button.png');
+    game.load.spritesheet('button', 'assets/button_sprites.png', 190, 49);
     game.stage.backgroundColor = gameOptions.colors[2];
   },
   create: function() {
-    var menuLabel = game.add.text(42, 60, 'Chain Reaction' , { font: '40px Arial', fill: '#ffffff' });
-    gameType1Button = game.add.button(((gameOptions.gameWidth/2)-95), 170, 'button', gameType1Click, this).scale.setTo(1.1, 1.1);
+    var menuLabel = game.add.text(204, 60, 'Chain Reaction' , { font: '40px Arial', fill: '#ffffff' });
+    gameType1Button = game.add.button(((gameOptions.gameWidth/2)-95), 170, 'button', gameType1Click, this, 1, 0).scale.setTo(1.1, 1.1);
     gameType1ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-78), 180, 'Human vs Human' , { font: '22px Arial', fill: '#000000' });
     function gameType1Click() {
       gameType = 1;
       game.state.start('gameType1');
     }
-    gameType2Button = game.add.button(((gameOptions.gameWidth/2)-95), 250, 'button', gameType2Click, this);
-    gameType2ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-88), 258, 'Human vs Human' , { font: '22px Arial', fill: '#000000' });
+    gameType2Button = game.add.button(((gameOptions.gameWidth/2)-95), 250, 'button', gameType2Click, this, 1, 0).scale.setTo(1.1, 1.1);
+    gameType2ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-78), 260, 'Human vs Human' , { font: '22px Arial', fill: '#000000' });
     function gameType2Click() {
       gameType = 2;
       game.state.start('gameType2');
     }
-    gameType3Button = game.add.button(((gameOptions.gameWidth/2)-95), 330, 'button', gameType3Click, this);
-    gameType3ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-88), 338, 'Human vs Human' , { font: '22px Arial', fill: '#000000' });
+    gameType3Button = game.add.button(((gameOptions.gameWidth/2)-95), 330, 'button', gameType3Click, this, 1, 0).scale.setTo(1.1, 1.1);
+    gameType3ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-78), 340, 'Human vs Human' , { font: '22px Arial', fill: '#000000' });
     function gameType3Click() {
       gameType = 3;
       game.state.start('gameType3');
     }
-    gameType4Button = game.add.button(((gameOptions.gameWidth/2)-95), 410, 'button', gameType4Click, this);
-    gameType4ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-88), 418, 'Human vs Human' , { font: '22px Arial', fill: '#000000' });
+    gameType4Button = game.add.button(((gameOptions.gameWidth/2)-95), 410, 'button', gameType4Click, this, 1, 0).scale.setTo(1.1, 1.1);
+    gameType4ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-78), 420, 'Human vs Human' , { font: '22px Arial', fill: '#000000' });
     function gameType4Click() {
       gameType = 4;
       game.state.start('gameType4');
@@ -135,23 +154,19 @@ game.state.add('menu', menuState);
 game.state.start('menu');
 
 var winState = {
-  preload: function() {
-    this.load.image('button', 'assets/button.png');
-    game.stage.backgroundColor = gameOptions.colors[2];
-  },
   create: function() {
     if(winner==1 && gameType==1) {
-      let winLabel = game.add.text(25, 80, 'Player 1 wins!' , { font: '50px Arial', fill: '#ffffff' });
+      let winLabel = game.add.text(176, 80, 'Player 1 wins!' , { font: '50px Arial', fill: '#ffffff' });
     }
     else if(winner==-1 && gameType==1) {
-      let winLabel = game.add.text(25, 80, 'Player 2 wins!' , { font: '50px Arial', fill: '#ffffff' });
+      let winLabel = game.add.text(176, 80, 'Player 2 wins!' , { font: '50px Arial', fill: '#ffffff' });
     }
-    menuButton = game.add.button(((gameOptions.gameWidth/2)-95), 210, 'button', menuClick, this);
+    menuButton = game.add.button(((gameOptions.gameWidth/2)-95), 210, 'button', menuClick, this, 1, 0);
     menuButtonLabel = game.add.text(((gameOptions.gameWidth/2)-50), 218, 'Main Menu' , { font: '22px Arial', fill: '#000000' });
     function menuClick() {
       game.state.start('menu');
     }
-    playAgainButton = game.add.button(((gameOptions.gameWidth/2)-95), 300, 'button', playAgainClick, this);
+    playAgainButton = game.add.button(((gameOptions.gameWidth/2)-95), 300, 'button', playAgainClick, this, 1, 0);
     playAgainButtonLabel = game.add.text(((gameOptions.gameWidth/2)-50), 308, 'Play Again' , { font: '22px Arial', fill: '#000000' });
     function playAgainClick() {
       if(gameType==1) {
@@ -180,11 +195,11 @@ game.state.add('win', winState);
 
 function preload() {
   winner = 0;
-  game.load.image('cell', 'assets/cell.png');
   game.stage.backgroundColor = gameOptions.colors[2];
   let graphics = game.add.graphics(0, 0);
   graphics.beginFill(gameOptions.colors[0], 1);
   graphics.drawRect(gameOptions.boardLeftPadding, gameOptions.boardTopPadding, gameOptions.boardWidth, gameOptions.boardHeight);
+  game.load.image('cell', 'assets/cell.png');
 }
 
 function create() {
@@ -205,10 +220,14 @@ async function updateGameState() {
     for(let xPos=gameOptions.boardLeftPadding; xPos<(gameOptions.boardLeftPadding+gameOptions.boardWidth-gameOptions.cellPadding); xPos+=(gameOptions.cellPadding+gameOptions.cellSize)) {
       if(xClickedPos>=(xPos+gameOptions.cellPadding+1) && xClickedPos<=(xPos+gameOptions.cellPadding+gameOptions.cellSize) && yClickedPos>=(yPos+gameOptions.cellPadding+2) && yClickedPos<=(yPos+gameOptions.cellPadding+gameOptions.cellSize+1)) {
         if(gameState.player==1 && gameState.board[rowIndex][colIndex]>=0) {
+          undoClickCount = 0;
+          gameState.prevBoard = gameState.board.map(row => row.slice());
           gameState.board[rowIndex][colIndex]++;
           validFlag = 1;
         }
         else if(gameState.player==-1 && gameState.board[rowIndex][colIndex]<=0) {
+          undoClickCount = 0;
+          gameState.prevBoard = gameState.board.map(row => row.slice());
           gameState.board[rowIndex][colIndex]--;
           validFlag = 1;
         }
@@ -246,21 +265,47 @@ async function updateGameState() {
   if(validFlag==1) {
     validFlag = -1;
     if(winner==0) {
+      currentTurnLabel.destroy();
       gameState.player *= -1;
+      changeCurrentTurnLabel();
     }
-    let graphics = game.add.graphics(0, 0);
-    if(gameState.player==1 && winner==0) {
-      graphics.beginFill(gameOptions.colors[0], 1);
-    }
-    else if(gameState.player==-1 && winner==0) {
-      graphics.beginFill(gameOptions.colors[1], 1);
-    }
-    graphics.drawRect(gameOptions.boardLeftPadding, gameOptions.boardTopPadding, gameOptions.boardWidth, gameOptions.boardHeight);
+    changeBoardColor();
   }
 }
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function undoClick() {
+  ++undoClickCount;
+  if(undoClickCount==1) {
+    gameState.board = gameState.prevBoard.map(row => row.slice());
+    gameState.player *= -1;
+    changeBoardColor();
+  }
+  currentTurnLabel.destroy();
+  changeCurrentTurnLabel();
+}
+
+function changeBoardColor() {
+  let graphics = game.add.graphics(0, 0);
+  if(gameState.player==1 && winner==0) {
+    graphics.beginFill(gameOptions.colors[0], 1);
+  }
+  else if(gameState.player==-1 && winner==0) {
+    graphics.beginFill(gameOptions.colors[1], 1);
+  }
+  graphics.drawRect(gameOptions.boardLeftPadding, gameOptions.boardTopPadding, gameOptions.boardWidth, gameOptions.boardHeight);
+}
+
+function changeCurrentTurnLabel() {
+  if(gameState.player==1 && gameType==1) {
+    currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Human 1' , { font: '20px Arial', fill: '#ffffff' });
+  }
+  else if(gameState.player==-1 && gameType==1) {
+    currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Human 2' , { font: '20px Arial', fill: '#ffffff' });
+  }
 }
 
 function getNeighbors(rowIndex, colIndex) {
