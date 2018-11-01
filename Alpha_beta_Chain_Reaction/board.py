@@ -203,4 +203,3 @@ class Board():
 
 		return heuristic_value * player
 
-

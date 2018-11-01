@@ -76,4 +76,8 @@ def min_value(b,depth,alpha,beta,player):
 		if alpha >= beta:
 			break
 
+<<<<<<< HEAD
 	return b_score
+=======
+	return b_score
+>>>>>>> 7febf7be55c3bd7b42d7d155a4bc2987be07057b
