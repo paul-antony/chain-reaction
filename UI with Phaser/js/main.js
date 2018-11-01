@@ -39,7 +39,7 @@ var gameOptions = {
   cellPadding: 2,
   orbRadius: 20,
   colors: [0xff0000, 0x00ff00, 0x3498db],
-  burstTime: 0,
+  burstTime: 0
 }
 
 var gameType = 0;
