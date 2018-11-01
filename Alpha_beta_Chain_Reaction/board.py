@@ -170,31 +170,36 @@ class Board():
 					unstable.append(i)
 		self.player *= -1      
 
-    #
-    #
-    # Function Name:    cal_heuristics()
-    # Input:            self --> the object of the class 
-    # Output:           heuristicValue --> the heuristic value in a given state
-    # Logic:            This function is used to find and return the heuristic value at a particular state of the board. For finding the heuristic value, we take 
-    #                   into account the number of our orbs present on the board, the number of our opponent's orbs present on the board, our orb cells that are
-    #                   about to reach their critical mass and our opponent neighboring cells that are about to reach their critical mass.  
-    # Example Call:     self.neighbors([0,1])
-    #
-    #
-	def cal_heuristics(self):
+        #
+        #
+        # Function Name:    cal_heuristics()
+        # Input:            self --> the object of the class 
+        # Output:           heuristicValue --> the heuristic value in a given state
+        # Logic:            This function is used to find and return the heuristic value at a particular state of the board. For finding the heuristic value, we take 
+        #                   into account the number of our orbs present on the board, the number of our opponent's orbs present on the board, our orb cells that are
+        #                   about to reach their critical mass and our opponent neighboring cells that are about to reach their critical mass.  
+        # Example Call:     self.neighbors([0,1])
+        #
+        #
+	def cal_heuristics(self,player = 1):
+
 		heuristic_value = 0
-		my_orbs, opponent_orbs = 0, 0
+
+		positive_orbs, negative_orbs = 0, 0
+
 		for pos in [(x,y) for x in range(self.m) for y in range(self.n)]:
-			if self.board[pos[0]][pos[1]]/self.player > 0:
-				my_orbs += abs(self.board[pos[0]][pos[1]])
+			if self.board[pos[0]][pos[1]] > 0:
+				positive_orbs += self.board[pos[0]][pos[1]]
 			else:
-				opponent_orbs += abs(self.board[pos[0]][pos[1]])
-		heuristic_value = my_orbs - opponent_orbs
-		if opponent_orbs == 0 and my_orbs > 1:
-			return 200
-		elif my_orbs == 0 and opponent_orbs > 1:
-			return -200
-		return heuristic_value
+				negative_orbs += self.board[pos[0]][pos[1]]
 
+		heuristic_value = positive_orbs + negative_orbs
 
+		if negative_orbs == 0 and positive_orbs > 1:
+			heuristic_value = 200
+
+		elif positive_orbs == 0 and negative_orbs < -1:
+			heuristic_value = -200
+
+		return heuristic_value * player
 
