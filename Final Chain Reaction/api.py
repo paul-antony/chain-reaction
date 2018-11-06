@@ -1,22 +1,20 @@
-from flask import Flask, request, jsonify
+from __future__ import print_function
+from flask import Flask, request, jsonify, render_template
+import sys
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
 
-log_file = None
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/', methods=['GET', 'POST'])
-def game():
-    if request.method == 'GET':
-        if log_file is not None:
-            return "Log file not instantiated yet", 404
-        else:
-            return jsonify(log_file)
-    elif request.method == 'POST':
-        log_file = request.form
-        if log_file is not None:
-            return "Ok"
-        else:
-            return "No data provided", 400
+def main():
+
+    content = request.json
+    print("hi", file=sys.stderr)
+
+    return content
 
 app.run()

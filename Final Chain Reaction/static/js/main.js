@@ -70,9 +70,9 @@ var gameType1State = {
     player1Label = game.add.text(((gameOptions.gameWidth/2)+48), 90, 'Player 1: Human 1' , { font: '20px Arial', fill: '#ffffff' });
     player2Label = game.add.text(((gameOptions.gameWidth/2)+48), 125, 'Player 2: Human 2' , { font: '20px Arial', fill: '#ffffff' });
     currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Human 1' , { font: '20px Arial', fill: '#ffffff' });
+    game.input.onDown.add(updateGameState, this);
   },
   update: function() {
-    game.input.onDown.add(updateGameState, this);
     updateBoard();
   }
 }
@@ -100,16 +100,20 @@ var gameType2State = {
       player2Label = game.add.text(((gameOptions.gameWidth/2)+48), 125, 'Player 2: Agent 1' , { font: '20px Arial', fill: '#ffffff' });
       currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Human' , { font: '20px Arial', fill: '#ffffff' });
     }
+    game.input.onDown.add(updateGameState, this);
+    if((turnAI==1 && gameState.player==1) || (turnAI==-1 && gameState.player==-1)) {
+      turnState = 0;
+      $.postJSON('/', {
+        player: gameState.player,
+        board: gameState.board
+      }, function(data) {
+        console.log("success");
+      });
+    }
   },
   update: function() {
-    if((turnAI==-1 && gameState.player==1) || (turnAI==1 && gameState.player==-1)) {
-
-    }
-    else if((turnAI==1 && gameState.player==1) || (turnAI==-1 && gameState.player==-1)) {
-
-    }
-    game.input.onDown.add(updateGameState, this);
     updateBoard();
+
   }
 }
 
@@ -147,7 +151,7 @@ game.state.add('gameType4', gameType4State);
 
 var menuState = {
   preload: function() {
-    game.load.spritesheet('button', 'assets/button_sprites.png', 190, 49);
+    game.load.spritesheet('button', 'static/assets/button_sprites.png', 190, 49);
     game.stage.backgroundColor = gameOptions.colors[2];
   },
   create: function() {
@@ -248,7 +252,7 @@ function preload() {
   let graphics = game.add.graphics(0, 0);
   graphics.beginFill(gameOptions.colors[0], 1);
   graphics.drawRect(gameOptions.boardLeftPadding, gameOptions.boardTopPadding, gameOptions.boardWidth, gameOptions.boardHeight);
-  game.load.image('cell', 'assets/cell.png');
+  game.load.image('cell', 'static/assets/cell.png');
 }
 
 function create() {
