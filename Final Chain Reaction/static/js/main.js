@@ -52,7 +52,9 @@ var initialState = 1;
 
 var undoClickCount = 2;
 
-var turnAI = 0;
+var agentTurn = 0;
+
+var postCount = 0;
 
 var game = new Phaser.Game(gameOptions.gameWidth, gameOptions.gameHeight, Phaser.AUTO, 'game-section', { preload: preload, create: create });
 
@@ -90,30 +92,46 @@ var gameType2State = {
     menuButton = game.add.button(((gameOptions.gameWidth/2)+197), 472, 'button', menuClick, this, 1, 0).scale.setTo(0.6, 1);
     menuButtonLabel = game.add.text(((gameOptions.gameWidth/2)+223), 480, 'MENU' , { font: '22px Arial', fill: '#000000' });
     gameLabel = game.add.text(((gameOptions.gameWidth/2)+88), 30, 'Chain Reaction' , { font: '28px Arial', fill: '#ffffff' });
-    if(turnAI==1) {
+    if(agentTurn==1) {
       player1Label = game.add.text(((gameOptions.gameWidth/2)+48), 90, 'Player 1: Agent 1' , { font: '20px Arial', fill: '#ffffff' });
       player2Label = game.add.text(((gameOptions.gameWidth/2)+48), 125, 'Player 2: Human' , { font: '20px Arial', fill: '#ffffff' });
       currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Agent 1' , { font: '20px Arial', fill: '#ffffff' });
     }
-    else if(turnAI==-1) {
+    else if(agentTurn==-1) {
       player1Label = game.add.text(((gameOptions.gameWidth/2)+48), 90, 'Player 1: Human' , { font: '20px Arial', fill: '#ffffff' });
       player2Label = game.add.text(((gameOptions.gameWidth/2)+48), 125, 'Player 2: Agent 1' , { font: '20px Arial', fill: '#ffffff' });
       currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Human' , { font: '20px Arial', fill: '#ffffff' });
     }
     game.input.onDown.add(updateGameState, this);
-    if((turnAI==1 && gameState.player==1) || (turnAI==-1 && gameState.player==-1)) {
-      turnState = 0;
-      $.postJSON('/', {
-        player: gameState.player,
-        board: gameState.board
-      }, function(data) {
-        console.log("success");
-      });
-    }
   },
   update: function() {
     updateBoard();
-
+    if(((agentTurn==1 && gameState.player==1) || (agentTurn==-1 && gameState.player==-1)) && postCount==0) {
+      ++postCount;
+      turnState = 0;
+      $.post('/postmethod', {
+        mode: gameType,
+        player: gameState.player,
+        board: JSON.stringify(gameState.board)
+      },
+      function(data) {
+        var move = JSON.parse("[" + data + "]");
+        console.log(move, move[0][1]);
+        undoClickCount = 0;
+        gameState.prevBoard = gameState.board.map(row => row.slice());
+        gameState.board[move[0][0]][move[0][1]]++;
+        burst(move[0][0], move[0][1]);
+        if(winner==0) {
+          currentTurnLabel.destroy();
+          gameState.player *= -1;
+          changeCurrentTurnLabel();
+        }
+        initialState = 0;
+        changeBoardColor();
+      });
+      turnState = 1;
+      postCount = 0;
+    }
   }
 }
 
@@ -194,11 +212,11 @@ var choosePlayerState = {
     player2Button = game.add.button(((gameOptions.gameWidth/2)-95), 300, 'button', player2Click, this, 1, 0);
     player2ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-40), 308, 'Player 2' , { font: '22px Arial', fill: '#000000' });
     function player1Click() {
-      turnAI = -1;
+      agentTurn = -1;
       game.state.start('gameType2');
     }
     function player2Click() {
-      turnAI = 1;
+      agentTurn = 1;
       game.state.start('gameType2');
     }
     backButton = game.add.button(((gameOptions.gameWidth/2)+197), 472, 'button', menuClick, this, 1, 0).scale.setTo(0.6, 1);
@@ -263,7 +281,7 @@ function create() {
   }
 }
 
-async function updateGameState() {
+function updateGameState() {
   if(turnState==1) {
     turnState = 0;
     let xClickedPos = game.input.mousePointer.x;
@@ -290,23 +308,7 @@ async function updateGameState() {
             validFlag = 0;
           }
           if(validFlag==1) {
-            if(Math.abs(gameState.board[rowIndex][colIndex])>=criticalMass(rowIndex, colIndex)) {
-              let unstableCells = [];
-              unstableCells.push([rowIndex, colIndex]);
-              while(unstableCells.length>0) {
-                let unstableCellIndex = unstableCells.shift();
-                if(Math.abs(gameState.board[unstableCellIndex[0]][unstableCellIndex[1]])>=criticalMass(unstableCellIndex[0], unstableCellIndex[1])) {
-                  gameState.board[unstableCellIndex[0]][unstableCellIndex[1]] -= (gameState.player * criticalMass(unstableCellIndex[0], unstableCellIndex[1]));
-                  let neighbors = getNeighbors(unstableCellIndex[0], unstableCellIndex[1]);
-                  for(let index=0; index<neighbors.length; ++index) {
-                    gameState.board[neighbors[index][0]][neighbors[index][1]] = gameState.player * (Math.abs(gameState.board[neighbors[index][0]][neighbors[index][1]]) + 1);
-                    unstableCells.push(neighbors[index]);
-                  }
-                }
-                await sleep(gameOptions.burstTime);
-                checkWin();
-              }
-            }
+            burst(rowIndex, colIndex);
           }
           break;
         }
@@ -331,8 +333,23 @@ async function updateGameState() {
   }
 }
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+function burst(rowIndex, colIndex) {
+  if(Math.abs(gameState.board[rowIndex][colIndex])>=criticalMass(rowIndex, colIndex)) {
+    let unstableCells = [];
+    unstableCells.push([rowIndex, colIndex]);
+    while(unstableCells.length>0) {
+      let unstableCellIndex = unstableCells.shift();
+      if(Math.abs(gameState.board[unstableCellIndex[0]][unstableCellIndex[1]])>=criticalMass(unstableCellIndex[0], unstableCellIndex[1])) {
+        gameState.board[unstableCellIndex[0]][unstableCellIndex[1]] -= (gameState.player * criticalMass(unstableCellIndex[0], unstableCellIndex[1]));
+        let neighbors = getNeighbors(unstableCellIndex[0], unstableCellIndex[1]);
+        for(let index=0; index<neighbors.length; ++index) {
+          gameState.board[neighbors[index][0]][neighbors[index][1]] = gameState.player * (Math.abs(gameState.board[neighbors[index][0]][neighbors[index][1]]) + 1);
+          unstableCells.push(neighbors[index]);
+        }
+      }
+      checkWin();
+    }
+  }
 }
 
 function undoClick() {
@@ -369,6 +386,12 @@ function changeCurrentTurnLabel() {
   }
   else if(gameState.player==-1 && gameType==1) {
     currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Human 2' , { font: '20px Arial', fill: '#ffffff' });
+  }
+  if((gameState.player==1 && gameType==2 && agentTurn==1) || (gameState.player==-1 && gameType==2 && agentTurn==-1)) {
+    currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Agent 1' , { font: '20px Arial', fill: '#ffffff' });
+  }
+  else if((gameState.player==1 && gameType==2 && agentTurn==-1) || (gameState.player==-1 && gameType==2 && agentTurn==1)) {
+    currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Human' , { font: '20px Arial', fill: '#ffffff' });
   }
 }
 
