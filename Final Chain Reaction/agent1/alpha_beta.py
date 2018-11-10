@@ -3,7 +3,7 @@ import random
 from agent1.board import *
 
 def alpha_beta(board, player):
-	depth = 2
+	depth = 5
 	alpha = -300
 	beta = 300
 	moves = valid_moves(board, player)

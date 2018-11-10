@@ -119,18 +119,25 @@ var gameType2State = {
         console.log(move, move[0][1]);
         undoClickCount = 0;
         gameState.prevBoard = gameState.board.map(row => row.slice());
-        gameState.board[move[0][0]][move[0][1]]++;
-        burst(move[0][0], move[0][1]);
-        if(winner==0) {
-          currentTurnLabel.destroy();
-          gameState.player *= -1;
-          changeCurrentTurnLabel();
+        if(agentTurn==1) {
+          gameState.board[move[0][0]][move[0][1]]++;
         }
-        initialState = 0;
-        changeBoardColor();
+        else if(agentTurn==-1) {
+          gameState.board[move[0][0]][move[0][1]]--;
+        }
+        var promise = burst(move[0][0], move[0][1]);
+        promise.then(function() {
+          if(winner==0) {
+            currentTurnLabel.destroy();
+            gameState.player *= -1;
+            changeCurrentTurnLabel();
+          }
+          initialState = 0;
+          changeBoardColor();
+          turnState = 1;
+          postCount = 0;
+        })
       });
-      turnState = 1;
-      postCount = 0;
     }
   }
 }
@@ -281,7 +288,7 @@ function create() {
   }
 }
 
-function updateGameState() {
+async function updateGameState() {
   if(turnState==1) {
     turnState = 0;
     let xClickedPos = game.input.mousePointer.x;
@@ -308,7 +315,7 @@ function updateGameState() {
             validFlag = 0;
           }
           if(validFlag==1) {
-            burst(rowIndex, colIndex);
+            await burst(rowIndex, colIndex);
           }
           break;
         }
@@ -324,6 +331,7 @@ function updateGameState() {
       if(winner==0) {
         currentTurnLabel.destroy();
         gameState.player *= -1;
+        console.log(gameState.player, agentTurn);
         changeCurrentTurnLabel();
       }
       initialState = 0;
@@ -333,7 +341,7 @@ function updateGameState() {
   }
 }
 
-function burst(rowIndex, colIndex) {
+async function burst(rowIndex, colIndex) {
   if(Math.abs(gameState.board[rowIndex][colIndex])>=criticalMass(rowIndex, colIndex)) {
     let unstableCells = [];
     unstableCells.push([rowIndex, colIndex]);
@@ -347,9 +355,14 @@ function burst(rowIndex, colIndex) {
           unstableCells.push(neighbors[index]);
         }
       }
+      await sleep(gameOptions.burstTime);
       checkWin();
     }
   }
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function undoClick() {
