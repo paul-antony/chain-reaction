@@ -52,6 +52,8 @@ var initialState = 1;
 
 var undoClickCount = 2;
 
+var canUndoClick = 1;
+
 var agentTurn = 0;
 
 var postCount = 0;
@@ -116,9 +118,8 @@ var gameType2State = {
       },
       function(data) {
         var move = JSON.parse("[" + data + "]");
-        console.log(move, move[0][1]);
         undoClickCount = 0;
-        gameState.prevBoard = gameState.board.map(row => row.slice());
+        canUndoClick = 0;
         if(agentTurn==1) {
           gameState.board[move[0][0]][move[0][1]]++;
         }
@@ -132,10 +133,10 @@ var gameType2State = {
             gameState.player *= -1;
             changeCurrentTurnLabel();
           }
-          initialState = 0;
           changeBoardColor();
           turnState = 1;
           postCount = 0;
+          canUndoClick = 1;
         })
       });
     }
@@ -241,6 +242,12 @@ var winState = {
     else if(winner==-1 && gameType==1) {
       let winLabel = game.add.text(176, 80, 'Player 2 wins!' , { font: '50px Arial', fill: '#ffffff' });
     }
+    if((winner==1 && gameType==2 && agentTurn==1) || (winner==-1 && gameType==2 && agentTurn==-1)) {
+      let winLabel = game.add.text(182, 80, 'Agent 1 wins!' , { font: '50px Arial', fill: '#ffffff' });
+    }
+    else if((winner==1 && gameType==2 && agentTurn==-1) || (winner==-1 && gameType==2 && agentTurn==1)) {
+      let winLabel = game.add.text(190, 80, 'Human wins!' , { font: '50px Arial', fill: '#ffffff' });
+    }
     menuButton = game.add.button(((gameOptions.gameWidth/2)-95), 210, 'button', menuClick, this, 1, 0);
     menuButtonLabel = game.add.text(((gameOptions.gameWidth/2)-50), 218, 'Main Menu' , { font: '22px Arial', fill: '#000000' });
     playAgainButton = game.add.button(((gameOptions.gameWidth/2)-95), 300, 'button', playAgainClick, this, 1, 0);
@@ -331,7 +338,6 @@ async function updateGameState() {
       if(winner==0) {
         currentTurnLabel.destroy();
         gameState.player *= -1;
-        console.log(gameState.player, agentTurn);
         changeCurrentTurnLabel();
       }
       initialState = 0;
@@ -343,6 +349,7 @@ async function updateGameState() {
 
 async function burst(rowIndex, colIndex) {
   if(Math.abs(gameState.board[rowIndex][colIndex])>=criticalMass(rowIndex, colIndex)) {
+    await sleep(gameOptions.burstTime);
     let unstableCells = [];
     unstableCells.push([rowIndex, colIndex]);
     while(unstableCells.length>0) {
@@ -368,13 +375,15 @@ function sleep(ms) {
 function undoClick() {
   if(initialState==0) {
     ++undoClickCount;
-    if(undoClickCount==1) {
+    if(undoClickCount==1 && canUndoClick==1) {
       gameState.board = gameState.prevBoard.map(row => row.slice());
-      gameState.player *= -1;
-      changeBoardColor();
+      if(gameType==1) {
+        gameState.player *= -1;
+        changeBoardColor();
+        currentTurnLabel.destroy();
+        changeCurrentTurnLabel();
+      }
     }
-    currentTurnLabel.destroy();
-    changeCurrentTurnLabel();
   }
 }
 
