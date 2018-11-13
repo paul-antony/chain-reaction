@@ -5,8 +5,8 @@ from board import *
 
 
 
-network = QNetwork(input_dim, output_dim, lr, epsilon, epsilon_min, epsilon_decay)
-network.load('weight_data.h5')
+network = QNetwork()
+network.load()
 
 board = Board()
 no_of_games = 100

@@ -73,7 +73,8 @@ print(Q/np.max(Q)*100)
 # Goal state = 5
 # Best sequence path starting from 2 -> 2, 3, 1, 5
 
-current_state = 1
+current_state = 2
+print("current location",current_state)
 steps = [current_state]
 
 while current_state != 5:

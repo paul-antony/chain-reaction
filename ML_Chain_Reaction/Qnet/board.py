@@ -25,7 +25,7 @@ class Board():
         # Example Call:     Board.__init__(9, 6, 1)
         #
         #
-	def __init__(self, m=9, n=6, player=-1):
+	def __init__(self, m = 9, n = 6, player = 1):
 		self.m = m
 		self.n = n
 		self.board = [[0 for i in range(self.n)] for i in range(self.m)]
@@ -221,4 +221,4 @@ class Board():
 	
 	def reset(self):
 		self.board = [[0 for i in range(self.n)] for i in range(self.m)]
-		self.player = -1
+		self.player = 1

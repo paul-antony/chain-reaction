@@ -1,104 +1,202 @@
 #game replay buffer and pre process of training data
 
-# buffer type (board(list), action(1d index), board_q(list), player(int),invalid_list(list of 1d_index of invalid move), reward(int))
+
+#buffer entry format(present_state,player,action,next_state,reward)
+import pickle
 import random
-alpha = 0.1
-gama = 0.99
+import copy
 
-class replay_byffer:
 
-	def __init__(self,alpha,gama):
+from DQN import *
+
+train_network = QNetwork()
+
+alpha = 0.9
+gama = 0.9
+max_size = 1000
+
+
+
+class replay_buffer:
+
+	def __init__(self):
 		self.buffer = []
 		self.alpha = alpha
 		self.gama = gama 
+		self.max_size = max_size
+		self.size = 0
 
 	def reset(self):
 		self.buffer = []
+		self.size = 0
 
-	
 	def push(self,item):
-		self.buffer.append(item)
+		mirror_boards = self.mirror(item)
+		self.index_convert(mirror_boards)
+
+		if self.max_size - self.size < len(mirror_boards):
+			self.pop(len(mirror_boards))
+		
+		for entry in mirror_boards:
+			self.buffer.append(entry)
+		
+		self.size += len(mirror_boards)
+
+
+	def pop(self,count):
+		for i in range(0,count):
+			self.buffer.pop(0)
+			self.size -= 1
+
+	def minibatch(self,size):
+		
+		output = random.sample(self.buffer,size)
+		return copy.deepcopy(output)
+#################################################################################################################
 
 
 
-	#Generates training data
-	def generate_data(self):
+	def train(self,size):
+		if size < self.size:
+			batch = self.minibatch(size)
 
-		pre = self.pre_process()#pre process data and returns input and output of data
-		multiply = self.mirror(pre,9,6)#incress the no of entries by adding mirror layouts
+			train_network.load()
 
-		data = self.random_selector(multiply)#selects random elements from list 
+			batch = self.update_q(batch)
+			batch = replay_buffer.illegal_move(batch)
+			x,y = replay_buffer.x_y_split(batch)
+			train_network.train(x,y)
+			train_network.save()
 
-		return self.x_y_split(data)
+
+
+	def update_q(self,input):
+		output = []
+
+		train_network.load()
+
+		for entry in input:
+			temp = []
+			temp.append(entry[0])#board state
+
+			present_state = entry[0][:]
+			
+			present_state.append(entry[1])
+			print(len(present_state),present_state)
+			temp.append(train_network.qvalue(present_state))#q value
+
+			if entry[4] in (1,-1):
+				temp[1][entry[2]] = entry[4]#update q value
+			else:	
+
+				next_state = entry[3]
+
+				next_state.append(entry[1]*-1)
+
+				if entry[1] == 1:
+					max_q = min(train_network.qvalue(next_state))
+				else:
+					max_q = max(train_network.qvalue(next_state))
+
+				temp[1][entry[2]] = temp[1][entry[2]] + self.alpha * (entry[4] + self.gama * max_q - temp[1][entry[2]] )#update q value
+
+			temp.append(entry[1])
+
+			output.append(temp)
+		
+		return output
+
+
+	@staticmethod
+	def illegal_move(input):
+		output = []
+		for entry in input:
+			temp = []
+			temp.append(entry[0])
+			temp.append(entry[1])
+			invalid_index = replay_buffer.invalid_move(entry[0],entry[2])
+			
+
+			for i in invalid_index:
+				temp[1][i] = -1 * entry[2]
+
+			temp[0].append(entry[2])#addind player to input			
+			output.append(temp)
+
+		return output
+
+	@staticmethod
+	def invalid_move(input,player):
+		invalid = []
+		for pos in range(0,len(input)):
+			if input[pos]/player < 0:
+				invalid.append(pos)
+		return invalid
 
 
 
-	#process the buffer
-	def pre_process(self):
+
+	@staticmethod
+	def x_y_split(input):
 		x = []
 		y = []
-		for entry in self.buffer[::-1]:
-			x.append(entry[0])
-			output = entry[2]
-			
-			if entry[5] in (1,-1):
-				output[entry[1]] = entry[5]
-
-			else:
-				if entry[3] == -1:
-					new = output[entry[1]] +self.alpha*(entry[5] + self.gama*(max(y[-1][1])) - output[entry[1]])
-				else:
-					new = output[entry[1]] +self.alpha*(entry[5] + self.gama*(min(y[-1][1])) - output[entry[1]])
-				output[entry[1]] = new
-
-			output = self.illegal_preprocess(output,entry[4],entry[3])
-			
-			x.append(output)
-			y.append(x)
-			x=[]
-
-		return y
-
-
-	@staticmethod
-	def illegal_preprocess(input,index,player):
-		
-		for i in index:
-			input[i] = player * -1 
-
-		return input
-
-	#converts list of 2d index'es to list of 1d index'es
-	@staticmethod
-	def index21(input):
-		output=[]
 		for i in input:
-			output.append(a[0]*6 + a[1])
+			x.append(i[0])
+			y.append(i[1])
+
+		return (x,replay_buffer.limiter(y))
+
+	@staticmethod
+	def limiter(input,upper = 1,lower = -1):
+		
+		output = []
+		for i in input:
+			temp = []
+			for j in i:
+
+				if j>upper:
+					temp.append(upper)
+				elif j<lower:
+					temp.append(lower)
+				else:
+					temp.append(j)
+			output.append(temp)
 		return output
 
+#####################################################################################################################
 
-	
-
-	
-	#adds mirror states to board
 	@staticmethod
-	def mirror(x,m,n):
+	def mirror(input,m=9,n=6):
+		
 		output = []
-		for entry in x:
+
+		output.append(input)
 			
-			output.append(entry)
-			a = (replay_byffer.convert_to_2d(entry[0], m, n), replay_byffer.convert_to_2d(entry[1], m, n))
-			b = (replay_byffer.flip_horizontal(a[0]),replay_byffer.flip_horizontal(a[1]))
-			c = (replay_byffer.flip_vertical(a[0]),replay_byffer.flip_vertical(a[1]))
-			d = (replay_byffer.flip_horizontal(c[0]),replay_byffer.flip_horizontal(c[1]))
-			output.append([replay_byffer.convert_to_1d(b[0]),replay_byffer.convert_to_1d(b[1])])
-			output.append([replay_byffer.convert_to_1d(c[0]),replay_byffer.convert_to_1d(c[1])])
-			output.append([replay_byffer.convert_to_1d(d[0]),replay_byffer.convert_to_1d(d[1])])
+		a = (replay_buffer.convert_to_2d(input[0], m, n), replay_buffer.convert_to_2d(input[3], m, n))
+		b = (replay_buffer.flip_horizontal(a[0]),replay_buffer.flip_horizontal(a[1]))
+		c = (replay_buffer.flip_vertical(a[0]),replay_buffer.flip_vertical(a[1]))
+		d = (replay_buffer.flip_horizontal(c[0]),replay_buffer.flip_horizontal(c[1]))
+
+
+
+		output.append([replay_buffer.convert_to_1d(b[0]), input[1], (input[2][0],n - input[2][1] - 1), replay_buffer.convert_to_1d(b[1]),input[4]])
+		output.append([replay_buffer.convert_to_1d(c[0]), input[1], (m - input[2][0]-1,input[2][1]),replay_buffer.convert_to_1d(c[1]),input[4]])
+		output.append([replay_buffer.convert_to_1d(d[0]), input[1], (m - input[2][0] - 1, n - input[2][1] - 1),replay_buffer.convert_to_1d(d[1]),input[4]])
 		
 		return output
 
+	@staticmethod
+	def index_convert(input,m = 9, n = 6):
+		for entry in input:
+			entry[2] = replay_buffer.index_1d(entry[2],m,n)
 
-	
+	#converts 2d index to id index
+	@staticmethod
+	def index_1d(input,m = 9, n = 6):
+		output = input[0]*n + input[1]
+		return output
+
+
 	#flips 2d matrix vertical
 	@staticmethod
 	def flip_vertical(input):
@@ -123,7 +221,7 @@ class replay_byffer:
 		return output
 
 
-	#converts 1d list to 2d
+
 	@staticmethod
 	def convert_to_2d(input,m,n):
 		output = []
@@ -152,53 +250,24 @@ class replay_byffer:
 		return output
 
 
-	#removes duplicate entries
-	@staticmethod
-	def remove_duplicate(input): 
-    		output = [] 
-    		for entry in input: 
-        		if entry not in output: 
-            			output.append(entry) 
-
-    		return output 
-	#selects 
-	@staticmethod
-	def random_selector(input):
-		random.shuffle(input)
-		return input
-
-
-	#converts 2d index to id index
-	@staticmethod
-	def index_1d(input):
-		output = input[0]*6 + input[1]
-		return output
-
-
-
-	#splits data into two list
-	@staticmethod
-	def x_y_split(input):
-		x = []
-		y = []
-		for i in input:
-			x.append(i[0])
-			y.append(i[1])
-
-		return (x,y)
-
-
-
-	#converts list of 2d index to id index
-	@staticmethod
-	def index_list_converter(input):
-		output = []
-		for i in input:
-			output.append(replay_byffer.index_1d(i))
-
-		return output
 
 
 
 if __name__ == "__main__":
-	print(replay_byffer.index_list_converter([[1,1],[2,2],[3,4]],1))
+	a = replay_buffer()
+	#b = [1,2,3,4,5,6]
+	#c = ['a','b','c','d','e','f']
+	#a.push([b,1,(1,1),c,-1,0.9])
+
+	filename = 'BUFFER.pickle'
+	outfile = open(filename,'wb')
+	pickle.dump(a,outfile)
+	outfile.close()
+
+	#infile = open(filename,'rb')
+	#d = pickle.load(infile)
+	#infile.close()
+
+	#print(a==d)
+	#print(a.buffer)
+	#print(d.buffer)

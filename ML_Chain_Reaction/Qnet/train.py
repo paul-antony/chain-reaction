@@ -1,4 +1,5 @@
 
+
 import copy
 
 from DQN import *
@@ -8,15 +9,19 @@ from random_player import *
 from alpha_beta import *
 
 def train():
-	network = QNetwork(input_dim, output_dim, lr, epsilon, epsilon_min, epsilon_decay)
-	#network.save('weight_data.h5')
+	network = QNetwork()
+	#network.save()
 	#exit(0)
-	network.load('weight_data.h5')
+	network.load()
 
 	board = Board()
-	buffer = replay_byffer(alpha,gama)
 
-	no_of_games = 1000
+	filename = 'BUFFER.pickle'
+	infile = open(filename,'rb')
+	buffer = pickle.load(infile)
+	infile.close()
+
+	no_of_games = 100
 
 	while no_of_games> 0:#no of games to run
 		game_over = False
@@ -28,21 +33,22 @@ def train():
 			board_state = board.list()
 			player = board.player
 
-			action = alpha_beta(board,1)
+			action = alpha_beta(board,2)
 
-			Q_value = network.qvalue(board)
 			
 
 			buffer_entry.append(board_state)
-			buffer_entry.append(replay_byffer.index_1d(action))
-			buffer_entry.append(Q_value)
 			buffer_entry.append(player)
-			buffer_entry.append(replay_byffer.index_list_converter(board.invalid_move()))
+			buffer_entry.append(action)
 
 			board.move(action)
+			next_board = board.list()
+			buffer_entry.append(next_board)
+
+
 			value = board.cal_heuristics()
 			if value in (200,-200):
-				buffer_entry.append(-1*board.player*1)
+				buffer_entry.append(-1*board.player)
 				buffer.push(copy.deepcopy(buffer_entry))
 				game_over = True
 				break
@@ -54,20 +60,23 @@ def train():
 			buffer_entry = []
 
 
-			action,Q_value = network.action_training(board)
+			action = network.action_training(board)
 			board_state = board.list()
 			player = board.player
 
 			buffer_entry.append(board_state)
-			buffer_entry.append(replay_byffer.index_1d(action))
-			buffer_entry.append(Q_value)
 			buffer_entry.append(player)
-			buffer_entry.append(replay_byffer.index_list_converter(board.invalid_move()))
+			buffer_entry.append(action)
 
 			board.move(action)
+
+			next_board = board.list()
+			buffer_entry.append(next_board)
+
+
 			value = board.cal_heuristics()
 			if value in (200,-200):
-				buffer_entry.append(-1*board.player*1)
+				buffer_entry.append(-1*board.player)
 				buffer.push(copy.deepcopy(buffer_entry))
 				game_over = True
 				break
@@ -79,14 +88,20 @@ def train():
 		print("game remaining:",no_of_games)
 		no_of_games = no_of_games - 1
 
-		x, y = buffer.generate_data()
+		buffer.train(32)
 
-		network.train(x,y)
-		network.save('weight_data.h5')
+		outfile = open(filename,'wb')
+		pickle.dump(buffer,outfile)
+		outfile.close()
 
+
+		#reset environment
 		board.reset()
-		network.eps_update()
 		buffer.reset()
+		network.eps_update()
+		network.load()
+
+
 
 
 if __name__ == "__main__":

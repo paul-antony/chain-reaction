@@ -9,16 +9,18 @@ from collections import deque
 
 
 
-input_dim = 54
+input_dim = 55
 output_dim = 54
 
 epsilon = 1.0
 epsilon_min = 0.10
-epsilon_decay = 0.939 #we want to decrease the number of explorations as it gets good at playing games.
-lr = 0.001
+epsilon_decay = 0.93 #we want to decrease the number of explorations as it gets good at playing games.
+lr = 0.01
+
+filename = 'weight_data.h5'
 
 class QNetwork:
-	def __init__(self, input_dim, output_dim, lr, epsilon, epsilon_min, epsilon_decay):
+	def __init__(self):
 
 		self.input_dim = input_dim
 		self.output_dim = output_dim		
@@ -26,6 +28,9 @@ class QNetwork:
 		self.epsilon_min = epsilon_min
 		self.epsilon_decay = epsilon_decay
 		self.lr = lr
+
+		self.filename = 'weight_data.h5'
+
 		self.model = self.build_model()
 	
 	def build_model(self):
@@ -35,6 +40,8 @@ class QNetwork:
 		model.add(Dense(60, input_dim = self.input_dim,activation = "relu")) 
 		
 		model.add(Dense(60, activation = "relu")) 
+		model.add(Dense(60, activation = "relu"))
+		model.add(Dense(60, activation = "relu"))
 		
 		model.add(Dense(self.output_dim, activation = "linear")) # output layer
 		
@@ -45,43 +52,27 @@ class QNetwork:
 		return model
 
 	
-	def load(self, name):
+	def load(self):
 
-        	self.model.load_weights(name)
+        	self.model.load_weights(self.filename)
 
-	def save(self, name):
+	def save(self):
 
-        	self.model.save_weights(name)
+        	self.model.save_weights(self.filename)
 
 	def action_training(self,board):
 
-		action_reward = self.model.predict(np.array([board.list()]))
-
 		if np.random.rand() <= self.epsilon:
 			action = random.randrange(self.output_dim)
+			return self.act_convert(action)
 
 		else:
-			if board.player == 1:
-				action = np.argmax(action_reward[0])
-
-			else:
-				action = np.argmin(action_reward[0])
-
-			valid_moves = board.valid_move()
-
-			if self.act_convert(action) not in valid_moves:
-			
-				for i in self.sort(action_reward[0].tolist(),board.player):
-					if self.act_convert(i[1]) in valid_moves:
-						action = i[1]
-						break
-		
-		return self.act_convert(action), action_reward[0].tolist()
+			return self.act(board)
 
 
 
-	def qvalue(self, board):
-		action_reward = self.model.predict(np.array([board.list()]))[0]
+	def qvalue(self, input):
+		action_reward = self.model.predict(np.array([input]))[0]
 		return action_reward.tolist()
 
 	@staticmethod
@@ -90,7 +81,11 @@ class QNetwork:
 	
 
 	def act(self,board):
-		action_reward = self.model.predict(np.array([board.list()]))
+		
+		input = board.list()
+		input.append(board.player)
+		action_reward = self.model.predict(np.array([input]))
+
 		if board.player == 1:
 			action = np.argmax(action_reward[0])
 
@@ -109,8 +104,6 @@ class QNetwork:
 
 
 
-	def act2(self,board):
-		action_reward = self.model.predict(np.array([board.list()]))[0].tolist()
 
 
 
@@ -121,7 +114,7 @@ class QNetwork:
 
 	
 	def train(self,x,y):
-		self.model.fit(np.array(x), np.array(y), epochs=1, verbose=0, batch_size = 1)
+		self.model.fit(np.array(x), np.array(y), epochs=1, verbose=0)
 
 
 	@staticmethod
