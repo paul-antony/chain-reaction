@@ -21,5 +21,14 @@ def main():
     print(cur_board, file=sys.stderr)
     if int(game_mode) == 2:
         return json.dumps(list(alpha_beta(cur_board, int(agent_turn))))
+    elif int(game_mode) == 3:
+        return json.dumps(list(alpha_beta(cur_board, int(agent_turn))))
+    elif int(game_mode) == 4:
+        agent1_turn = request.form['agent1']
+        print(agent1_turn, file=sys.stderr)
+        if (int(agent1_turn)==1 and int(agent_turn==1)) or (int(agent1_turn)==-1 and int(agent_turn)==-1):
+            return json.dumps(list(alpha_beta(cur_board, int(agent_turn))))
+        elif (int(agent1_turn)==1 and int(agent_turn)==-1) or (int(agent1_turn)==-1 and int(agent_turn)==1):
+            return json.dumps(list(alpha_beta(cur_board, int(agent_turn))))
 
 app.run()

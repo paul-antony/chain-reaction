@@ -56,6 +56,10 @@ var canUndoClick = 1;
 
 var agentTurn = 0;
 
+var agent1Turn = 0;
+
+var agent2Turn = 0;
+
 var postCount = 0;
 
 var game = new Phaser.Game(gameOptions.gameWidth, gameOptions.gameHeight, Phaser.AUTO, 'game-section', { preload: preload, create: create });
@@ -151,10 +155,57 @@ var gameType3State = {
   },
   create: function() {
     create();
+    undoButton = game.add.button(((gameOptions.gameWidth/2)+61), 472, 'button', undoClick, this, 1, 0).scale.setTo(0.6, 1);
+    undoButtonLabel = game.add.text(((gameOptions.gameWidth/2)+87), 480, 'UNDO' , { font: '22px Arial', fill: '#000000' });
+    menuButton = game.add.button(((gameOptions.gameWidth/2)+197), 472, 'button', menuClick, this, 1, 0).scale.setTo(0.6, 1);
+    menuButtonLabel = game.add.text(((gameOptions.gameWidth/2)+223), 480, 'MENU' , { font: '22px Arial', fill: '#000000' });
+    gameLabel = game.add.text(((gameOptions.gameWidth/2)+88), 30, 'Chain Reaction' , { font: '28px Arial', fill: '#ffffff' });
+    if(agentTurn==1) {
+      player1Label = game.add.text(((gameOptions.gameWidth/2)+48), 90, 'Player 1: Agent 2' , { font: '20px Arial', fill: '#ffffff' });
+      player2Label = game.add.text(((gameOptions.gameWidth/2)+48), 125, 'Player 2: Human' , { font: '20px Arial', fill: '#ffffff' });
+      currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Agent 2' , { font: '20px Arial', fill: '#ffffff' });
+    }
+    else if(agentTurn==-1) {
+      player1Label = game.add.text(((gameOptions.gameWidth/2)+48), 90, 'Player 1: Human' , { font: '20px Arial', fill: '#ffffff' });
+      player2Label = game.add.text(((gameOptions.gameWidth/2)+48), 125, 'Player 2: Agent 2' , { font: '20px Arial', fill: '#ffffff' });
+      currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Human' , { font: '20px Arial', fill: '#ffffff' });
+    }
+    game.input.onDown.add(updateGameState, this);
   },
   update: function() {
-    game.input.onDown.add(updateGameState, this);
     updateBoard();
+    if(((agentTurn==1 && gameState.player==1) || (agentTurn==-1 && gameState.player==-1)) && postCount==0) {
+      ++postCount;
+      turnState = 0;
+      $.post('/postmethod', {
+        mode: gameType,
+        player: gameState.player,
+        board: JSON.stringify(gameState.board)
+      },
+      function(data) {
+        var move = JSON.parse("[" + data + "]");
+        undoClickCount = 0;
+        canUndoClick = 0;
+        if(agentTurn==1) {
+          gameState.board[move[0][0]][move[0][1]]++;
+        }
+        else if(agentTurn==-1) {
+          gameState.board[move[0][0]][move[0][1]]--;
+        }
+        var promise = burst(move[0][0], move[0][1]);
+        promise.then(function() {
+          if(winner==0) {
+            currentTurnLabel.destroy();
+            gameState.player *= -1;
+            changeCurrentTurnLabel();
+          }
+          changeBoardColor();
+          turnState = 1;
+          postCount = 0;
+          canUndoClick = 1;
+        })
+      });
+    }
   }
 }
 
@@ -163,13 +214,57 @@ game.state.add('gameType3', gameType3State);
 var gameType4State = {
   preload: function() {
     preload();
+    let turn = [1, -1];
+    agent1Turn = turn[Math.floor(Math.random() * turn.length)];
+    if(agent1Turn==1) {
+      agent2Turn = -1;
+    }
+    else if(agent1Turn==-1) {
+      agent2Turn = 1;
+    }
   },
   create: function() {
     create();
+    menuButton = game.add.button(((gameOptions.gameWidth/2)+197), 472, 'button', menuClick, this, 1, 0).scale.setTo(0.6, 1);
+    menuButtonLabel = game.add.text(((gameOptions.gameWidth/2)+223), 480, 'MENU' , { font: '22px Arial', fill: '#000000' });
+    gameLabel = game.add.text(((gameOptions.gameWidth/2)+88), 30, 'Chain Reaction' , { font: '28px Arial', fill: '#ffffff' });
+    if(agent1Turn==1) {
+      player1Label = game.add.text(((gameOptions.gameWidth/2)+48), 90, 'Player 1: Agent 1' , { font: '20px Arial', fill: '#ffffff' });
+      player2Label = game.add.text(((gameOptions.gameWidth/2)+48), 125, 'Player 2: Agent 2' , { font: '20px Arial', fill: '#ffffff' });
+      currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Agent 1' , { font: '20px Arial', fill: '#ffffff' });
+    }
+    else if(agent1Turn==-1) {
+      player1Label = game.add.text(((gameOptions.gameWidth/2)+48), 90, 'Player 1: Agent 2' , { font: '20px Arial', fill: '#ffffff' });
+      player2Label = game.add.text(((gameOptions.gameWidth/2)+48), 125, 'Player 2: Agent 1' , { font: '20px Arial', fill: '#ffffff' });
+      currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Agent 2' , { font: '20px Arial', fill: '#ffffff' });
+    }
   },
   update: function() {
-    game.input.onDown.add(updateGameState, this);
     updateBoard();
+    $.post('/postmethod', {
+      mode: gameType,
+      player: gameState.player,
+      agent1: agent1Turn,
+      board: JSON.stringify(gameState.board)
+    },
+    function(data) {
+      var move = JSON.parse("[" + data + "]");
+      if(gameState.player==1) {
+        gameState.board[move[0][0]][move[0][1]]++;
+      }
+      else if(gameState.player==-1) {
+        gameState.board[move[0][0]][move[0][1]]--;
+      }
+      var promise = burst(move[0][0], move[0][1]);
+      promise.then(function() {
+        if(winner==0) {
+          currentTurnLabel.destroy();
+          gameState.player *= -1;
+          changeCurrentTurnLabel();
+        }
+        changeBoardColor();
+      })
+    });
   }
 }
 
@@ -198,7 +293,7 @@ var menuState = {
     gameType3ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-90), 340, 'Human vs Agent 2' , { font: '22px Arial', fill: '#000000' });
     function gameType3Click() {
       gameType = 3;
-      game.state.start('gameType3');
+      game.state.start('choosePlayer');
     }
     gameType4Button = game.add.button(((gameOptions.gameWidth/2)-114), 410, 'button', gameType4Click, this, 1, 0).scale.setTo(1.2, 1.1);
     gameType4ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-92), 420, 'Agent 1 vs Agent 2' , { font: '22px Arial', fill: '#000000' });
@@ -221,11 +316,21 @@ var choosePlayerState = {
     player2ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-40), 308, 'Player 2' , { font: '22px Arial', fill: '#000000' });
     function player1Click() {
       agentTurn = -1;
-      game.state.start('gameType2');
+      if(gameType==2) {
+        game.state.start('gameType2');
+      }
+      else if(gameType==3) {
+        game.state.start('gameType3');
+      }
     }
     function player2Click() {
       agentTurn = 1;
-      game.state.start('gameType2');
+      if(gameType==2) {
+        game.state.start('gameType2');
+      }
+      else if(gameType==3) {
+        game.state.start('gameType3');
+      }
     }
     backButton = game.add.button(((gameOptions.gameWidth/2)+197), 472, 'button', menuClick, this, 1, 0).scale.setTo(0.6, 1);
     backButtonLabel = game.add.text(((gameOptions.gameWidth/2)+223), 480, 'BACK' , { font: '22px Arial', fill: '#000000' });
@@ -248,6 +353,12 @@ var winState = {
     else if((winner==1 && gameType==2 && agentTurn==-1) || (winner==-1 && gameType==2 && agentTurn==1)) {
       let winLabel = game.add.text(190, 80, 'Human wins!' , { font: '50px Arial', fill: '#ffffff' });
     }
+    if((winner==1 && gameType==3 && agentTurn==1) || (winner==-1 && gameType==3 && agentTurn==-1)) {
+      let winLabel = game.add.text(182, 80, 'Agent 2 wins!' , { font: '50px Arial', fill: '#ffffff' });
+    }
+    else if((winner==1 && gameType==3 && agentTurn==-1) || (winner==-1 && gameType==3 && agentTurn==1)) {
+      let winLabel = game.add.text(194, 80, 'Human wins!' , { font: '50px Arial', fill: '#ffffff' });
+    }
     menuButton = game.add.button(((gameOptions.gameWidth/2)-95), 210, 'button', menuClick, this, 1, 0);
     menuButtonLabel = game.add.text(((gameOptions.gameWidth/2)-50), 218, 'Main Menu' , { font: '22px Arial', fill: '#000000' });
     playAgainButton = game.add.button(((gameOptions.gameWidth/2)-95), 300, 'button', playAgainClick, this, 1, 0);
@@ -257,10 +368,10 @@ var winState = {
         game.state.start('gameType1');
       }
       else if(gameType==2) {
-        game.state.start('gameType2');
+        game.state.start('choosePlayer');
       }
       else if(gameType==3) {
-        game.state.start('gameType3');
+        game.state.start('choosePlayer');
       }
       else if(gameType==4) {
         game.state.start('gameType4');
@@ -361,9 +472,9 @@ async function burst(rowIndex, colIndex) {
           gameState.board[neighbors[index][0]][neighbors[index][1]] = gameState.player * (Math.abs(gameState.board[neighbors[index][0]][neighbors[index][1]]) + 1);
           unstableCells.push(neighbors[index]);
         }
+        checkWin();
       }
       await sleep(gameOptions.burstTime);
-      checkWin();
     }
   }
 }
@@ -414,6 +525,18 @@ function changeCurrentTurnLabel() {
   }
   else if((gameState.player==1 && gameType==2 && agentTurn==-1) || (gameState.player==-1 && gameType==2 && agentTurn==1)) {
     currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Human' , { font: '20px Arial', fill: '#ffffff' });
+  }
+  if((gameState.player==1 && gameType==3 && agentTurn==1) || (gameState.player==-1 && gameType==3 && agentTurn==-1)) {
+    currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Agent 2' , { font: '20px Arial', fill: '#ffffff' });
+  }
+  else if((gameState.player==1 && gameType==3 && agentTurn==-1) || (gameState.player==-1 && gameType==3 && agentTurn==1)) {
+    currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Human' , { font: '20px Arial', fill: '#ffffff' });
+  }
+  if((gameState.player==1 && gameType==4 && agent1Turn==1) || (gameState.player==-1 && gameType==4 && agent1Turn==-1)) {
+    currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Agent 1' , { font: '20px Arial', fill: '#ffffff' });
+  }
+  else if((gameState.player==1 && gameType==4 && agent1Turn==-1) || (gameState.player==-1 && gameType==4 && agent1Turn==1)) {
+    currentTurnLabel = game.add.text(((gameOptions.gameWidth/2)+48), 180, 'Current Turn: Agent 2' , { font: '20px Arial', fill: '#ffffff' });
   }
 }
 
