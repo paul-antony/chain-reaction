@@ -6,7 +6,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Activation
 from keras.optimizers import Adam
 
-
+import tensorflow as tf
 
 
 input_dim = 54
@@ -32,6 +32,8 @@ class QNetwork:
 		self.filename_player1 = "player1.h5"
 		self.filename_player2 = "player2.h5"
 		self.model = self.build_model()
+		self.graph = []
+		self.graph.append(tf.get_default_graph())
 	
 	def build_model(self):
 
@@ -60,8 +62,10 @@ class QNetwork:
 				file_name = self.filename_player1
 			else:
 				file_name = self.filename_player2
+		print('111111111111111111111111111111111111111')
 			
 		self.model.load_weights(file_name)
+		print("2222222222222222222222222222222222222")
 
 	def save(self,player,file_name=[]):
 
@@ -98,7 +102,7 @@ class QNetwork:
 		return (int(action/6),action%6)
 	
 
-	def act(self,board,flag = 1,file_name=[]):
+	def act(self,board,file_name=[],flag = 1):
 		self.load(board.player,file_name)
 		action_reward = self.model.predict(np.array([board.list()]))
 

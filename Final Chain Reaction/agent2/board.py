@@ -118,10 +118,10 @@ class Board():
 
 
 
-	def input(self, state,player):
+	def input(self, state):
 		for pos in [(x,y) for x in range(self.m) for y in range(self.n)]:
 			self.board[pos[0]][pos[1]] = state[pos[0]][pos[1]]
-		self.player = player
+
 
 
 

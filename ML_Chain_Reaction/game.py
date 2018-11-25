@@ -39,9 +39,7 @@ def show_move(pos):
 def main():
 	global m,n, surface
 
-	network = QNetwork(input_dim, output_dim, lr, epsilon, epsilon_min, epsilon_decay)
-	network.load('Qnet/weight_data.h5')
-
+	network = QNetwork()
 	m,n = 9,6
 	surface = pygame.display.set_mode((50*n, 50*m))
 	pygame.display.set_caption('Chain Reaction')
@@ -74,7 +72,7 @@ def main():
 				break
 
 
-		new_move = network.act(board_ui)
+		new_move = network.act(board_ui,file_name='Qnet/player2.h5')
 		show_move(new_move)
 		board_ui.move(new_move)
 		drawBoard(board_ui)
