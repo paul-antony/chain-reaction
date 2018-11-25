@@ -171,7 +171,8 @@ class Board():
 		while len(unstable) > 0:
 			pos = unstable.pop(0)
 			if self.cal_heuristics() in [200,-200]:
-				break;
+				break
+				
 			if abs(self.board[pos[0]][pos[1]]) >= self.critical_mass(pos):
 				self.board[pos[0]][pos[1]] -= self.player * self.critical_mass(pos)
 				for i in self.neighbors(pos):

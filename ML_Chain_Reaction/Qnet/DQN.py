@@ -9,7 +9,7 @@ from collections import deque
 
 
 
-input_dim = 55
+input_dim = 54
 output_dim = 54
 
 epsilon = 1.0
@@ -29,8 +29,9 @@ class QNetwork:
 		self.epsilon_decay = epsilon_decay
 		self.lr = lr
 
-		self.filename = 'weight_data.h5'
 
+		self.filename_player1 = "player1.h5"
+		self.filename_player2 = "player2.h5"
 		self.model = self.build_model()
 	
 	def build_model(self):
@@ -52,13 +53,29 @@ class QNetwork:
 		return model
 
 	
-	def load(self):
+	def load(self,player,file_name=[]):
 
-        	self.model.load_weights(self.filename)
+		if file_name == []:
 
-	def save(self):
+			if player == 1:
+				file_name = self.filename_player1
+			else:
+				file_name = self.filename_player2
+			
+		self.model.load_weights(file_name)
 
-        	self.model.save_weights(self.filename)
+	def save(self,player,file_name=[]):
+
+		if file_name == []:
+			
+			if player == 1:
+				file_name = self.filename_player1
+			else:
+				file_name = self.filename_player2
+			
+		self.model.save_weights(file_name)
+
+
 
 	def action_training(self,board):
 
@@ -67,11 +84,13 @@ class QNetwork:
 			return self.act_convert(action)
 
 		else:
-			return self.act(board)
+			return self.act(board,0)
 
 
 
-	def qvalue(self, input):
+	def qvalue(self, input,player):
+
+		self.load(player)	
 		action_reward = self.model.predict(np.array([input]))[0]
 		return action_reward.tolist()
 
@@ -80,25 +99,19 @@ class QNetwork:
 		return (int(action/6),action%6)
 	
 
-	def act(self,board):
-		
-		input = board.list()
-		input.append(board.player)
-		action_reward = self.model.predict(np.array([input]))
+	def act(self,board,flag = 1):
+		self.load(board.player)
+		action_reward = self.model.predict(np.array([board.list()]))
 
-		if board.player == 1:
-			action = np.argmax(action_reward[0])
-
-		else:
-			action = np.argmin(action_reward[0])
-
-		valid_moves = board.valid_move()
-		if self.act_convert(action) not in valid_moves:
-			
-			for i in self.sort(action_reward[0].tolist(),board.player):
-				if self.act_convert(i[1]) in valid_moves:
-					action = i[1]
-					break
+		action = np.argmax(action_reward[0])
+		if flag == 1:
+			valid_moves = board.valid_move()
+			if self.act_convert(action) not in valid_moves:
+				
+				for i in self.sort(action_reward[0].tolist(),1):
+					if self.act_convert(i[1]) in valid_moves:
+						action = i[1]
+						break
 
 		return self.act_convert(action)
 
@@ -131,4 +144,8 @@ class QNetwork:
 
 
 if __name__ == "__main__":
-	print(QNetwork.sort([10,3,-200,6,3.14,-3.323],1))
+	#print(QNetwork.sort([10,3,-200,6,3.14,-3.323],1))
+
+	a=QNetwork()
+	a.save(1)
+	a.save(-1)
