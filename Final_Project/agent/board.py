@@ -174,7 +174,6 @@ class Board():
         # Example Call:     self.neighbors([0,1])
         #
         #
-	def cal_heuristics(self,player = 1):
 
 	def cal_heuristics(self,player = 1):
 
