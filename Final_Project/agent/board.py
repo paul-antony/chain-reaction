@@ -1,3 +1,4 @@
+<<<<<<< HEAD:Final Chain Reaction/agent1/board.py
 
 import copy
 
@@ -15,11 +16,34 @@ class Board():
         # Example Call:     Board.__init__(9, 6, 1)
         #
         #
+=======
+import copy
+
+class Board():
+>>>>>>> final task:Final Chain Reaction/agent/board.py
 	def __init__(self, m = 9, n = 6, player = 1):
 		self.m = m
 		self.n = n
 		self.board = [[0 for i in range(self.n)] for i in range(self.m)]
 		self.player = player
+<<<<<<< HEAD:Final Chain Reaction/agent1/board.py
+=======
+
+	def __getitem__(self, pos):
+		return self.board[pos[0]][pos[1]]
+
+	def __setitem__(self, pos, value):
+		self.board[pos[0]][pos[1]] = value
+
+	def __str__(self):
+		state = ""
+		for i in range(self.m):
+			for j in range(self.n):
+				state += str(self.board[i][j])
+				state += " "
+			state += "\n"
+		return state
+>>>>>>> final task:Final Chain Reaction/agent/board.py
 
         #
         #
@@ -117,12 +141,17 @@ class Board():
 
 
 
+<<<<<<< HEAD:Final Chain Reaction/agent1/board.py
 
 	def input(self, state,player):
+=======
+	def input(self, state, player):
+>>>>>>> final task:Final Chain Reaction/agent/board.py
 		for pos in [(x,y) for x in range(self.m) for y in range(self.n)]:
 			self.board[pos[0]][pos[1]] = state[pos[0]][pos[1]]
 		self.player = player
 
+<<<<<<< HEAD:Final Chain Reaction/agent1/board.py
 
 
         #
@@ -134,6 +163,8 @@ class Board():
         # Example Call:     self.valid_move()
         #
         #             
+=======
+>>>>>>> final task:Final Chain Reaction/agent/board.py
 	def valid_move(self):
 		if self.cal_heuristics() in [200,-200]:
 			return []
@@ -152,7 +183,10 @@ class Board():
         #
         # 
 
+<<<<<<< HEAD:Final Chain Reaction/agent1/board.py
 
+=======
+>>>>>>> final task:Final Chain Reaction/agent/board.py
 	def invalid_move(self):
 		invalid = []
 		for pos in [(x,y) for x in range(self.m) for y in range(self.n)]:
@@ -160,6 +194,7 @@ class Board():
 				invalid.append(pos)
 		return invalid
 
+<<<<<<< HEAD:Final Chain Reaction/agent1/board.py
         #
         #
         # Function Name:    move()
@@ -171,6 +206,8 @@ class Board():
         # Example Call:     self.valid_move()
         #
         #     
+=======
+>>>>>>> final task:Final Chain Reaction/agent/board.py
 	def move(self, pos):
 		self.board[pos[0]][pos[1]] += self.player
 		unstable = []
@@ -179,7 +216,11 @@ class Board():
 			pos = unstable.pop(0)
 			if self.cal_heuristics() in [200,-200]:
 				break
+<<<<<<< HEAD:Final Chain Reaction/agent1/board.py
 				
+=======
+
+>>>>>>> final task:Final Chain Reaction/agent/board.py
 			if abs(self.board[pos[0]][pos[1]]) >= self.critical_mass(pos):
 				self.board[pos[0]][pos[1]] -= self.player * self.critical_mass(pos)
 				for i in self.neighbors(pos):
@@ -200,6 +241,11 @@ class Board():
         #
 	def cal_heuristics(self,player = 1):
 
+<<<<<<< HEAD:Final Chain Reaction/agent1/board.py
+=======
+	def cal_heuristics(self,player = 1):
+
+>>>>>>> final task:Final Chain Reaction/agent/board.py
 		heuristic_value = 0
 
 		positive_orbs, negative_orbs = 0, 0
@@ -220,9 +266,12 @@ class Board():
 
 		return heuristic_value * player
 
+<<<<<<< HEAD:Final Chain Reaction/agent1/board.py
 
 
 
+=======
+>>>>>>> final task:Final Chain Reaction/agent/board.py
 	def list(self):
 		state = []
 		for i in range(self.m):
@@ -230,9 +279,12 @@ class Board():
 				state.append(self.board[i][j])
 		return state
 
+<<<<<<< HEAD:Final Chain Reaction/agent1/board.py
 
 
 	
+=======
+>>>>>>> final task:Final Chain Reaction/agent/board.py
 	def reset(self):
 		self.board = [[0 for i in range(self.n)] for i in range(self.m)]
 		self.player = 1

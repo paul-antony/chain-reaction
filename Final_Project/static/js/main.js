@@ -62,6 +62,8 @@ var agent2Turn = 0;
 
 var postCount = 0;
 
+var menuFlag = 0;
+
 var game = new Phaser.Game(gameOptions.gameWidth, gameOptions.gameHeight, Phaser.AUTO, 'game-section', { preload: preload, create: create });
 
 var gameType1State = {
@@ -132,12 +134,14 @@ var gameType2State = {
         }
         var promise = burst(move[0][0], move[0][1]);
         promise.then(function() {
-          if(winner==0) {
-            currentTurnLabel.destroy();
-            gameState.player *= -1;
-            changeCurrentTurnLabel();
+          if(menuFlag==0) {
+            if(winner==0) {
+              currentTurnLabel.destroy();
+              gameState.player *= -1;
+              changeCurrentTurnLabel();
+            }
+            changeBoardColor();
           }
-          changeBoardColor();
           turnState = 1;
           postCount = 0;
           canUndoClick = 1;
@@ -194,12 +198,14 @@ var gameType3State = {
         }
         var promise = burst(move[0][0], move[0][1]);
         promise.then(function() {
-          if(winner==0) {
-            currentTurnLabel.destroy();
-            gameState.player *= -1;
-            changeCurrentTurnLabel();
+          if(menuFlag==0) {
+            if(winner==0) {
+              currentTurnLabel.destroy();
+              gameState.player *= -1;
+              changeCurrentTurnLabel();
+            }
+            changeBoardColor();
           }
-          changeBoardColor();
           turnState = 1;
           postCount = 0;
           canUndoClick = 1;
@@ -241,30 +247,37 @@ var gameType4State = {
   },
   update: function() {
     updateBoard();
-    $.post('/postmethod', {
-      mode: gameType,
-      player: gameState.player,
-      agent1: agent1Turn,
-      board: JSON.stringify(gameState.board)
-    },
-    function(data) {
-      var move = JSON.parse("[" + data + "]");
-      if(gameState.player==1) {
-        gameState.board[move[0][0]][move[0][1]]++;
-      }
-      else if(gameState.player==-1) {
-        gameState.board[move[0][0]][move[0][1]]--;
-      }
-      var promise = burst(move[0][0], move[0][1]);
-      promise.then(function() {
-        if(winner==0) {
-          currentTurnLabel.destroy();
-          gameState.player *= -1;
-          changeCurrentTurnLabel();
+    if(postCount==0) {
+      ++postCount;
+      $.post('/postmethod', {
+        mode: gameType,
+        player: gameState.player,
+        agent1: agent1Turn,
+        board: JSON.stringify(gameState.board)
+      },
+      function(data) {
+        var move = JSON.parse("[" + data + "]");
+        console.log(move);
+        if(gameState.player==1) {
+          gameState.board[move[0][0]][move[0][1]]++;
         }
-        changeBoardColor();
-      })
-    });
+        else if(gameState.player==-1) {
+          gameState.board[move[0][0]][move[0][1]]--;
+        }
+        var promise = burst(move[0][0], move[0][1]);
+        promise.then(function() {
+          if(menuFlag==0) {
+            if(winner==0) {
+              currentTurnLabel.destroy();
+              gameState.player *= -1;
+              changeCurrentTurnLabel();
+            }
+            changeBoardColor();
+          }
+          postCount = 0;
+        })
+      });
+    }
   }
 }
 
@@ -281,24 +294,28 @@ var menuState = {
     gameType1ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-87), 180, 'Human vs Human' , { font: '22px Arial', fill: '#000000' });
     function gameType1Click() {
       gameType = 1;
+      menuFlag = 0;
       game.state.start('gameType1');
     }
     gameType2Button = game.add.button(((gameOptions.gameWidth/2)-114), 250, 'button', gameType2Click, this, 1, 0).scale.setTo(1.2, 1.1);
     gameType2ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-90), 260, 'Human vs Agent 1' , { font: '22px Arial', fill: '#000000' });
     function gameType2Click() {
       gameType = 2;
+      menuFlag = 0;
       game.state.start('choosePlayer');
     }
     gameType3Button = game.add.button(((gameOptions.gameWidth/2)-114), 330, 'button', gameType3Click, this, 1, 0).scale.setTo(1.2, 1.1);
     gameType3ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-90), 340, 'Human vs Agent 2' , { font: '22px Arial', fill: '#000000' });
     function gameType3Click() {
       gameType = 3;
+      menuFlag = 0;
       game.state.start('choosePlayer');
     }
     gameType4Button = game.add.button(((gameOptions.gameWidth/2)-114), 410, 'button', gameType4Click, this, 1, 0).scale.setTo(1.2, 1.1);
     gameType4ButtonLabel = game.add.text(((gameOptions.gameWidth/2)-92), 420, 'Agent 1 vs Agent 2' , { font: '22px Arial', fill: '#000000' });
     function gameType4Click() {
       gameType = 4;
+      menuFlag = 0;
       game.state.start('gameType4');
     }
   }
@@ -358,6 +375,12 @@ var winState = {
     }
     else if((winner==1 && gameType==3 && agentTurn==-1) || (winner==-1 && gameType==3 && agentTurn==1)) {
       let winLabel = game.add.text(194, 80, 'Human wins!' , { font: '50px Arial', fill: '#ffffff' });
+    }
+    if((winner==1 && gameType==4 && agent1Turn==1) || (winner==-1 && gameType==4 && agent1Turn==-1)) {
+      let winLabel = game.add.text(182, 80, 'Agent 1 wins!' , { font: '50px Arial', fill: '#ffffff' });
+    }
+    else if((winner==1 && gameType==4 && agent1Turn==-1) || (winner==-1 && gameType==4 && agent1Turn==1)) {
+      let winLabel = game.add.text(182, 80, 'Agent 2 wins!' , { font: '50px Arial', fill: '#ffffff' });
     }
     menuButton = game.add.button(((gameOptions.gameWidth/2)-95), 210, 'button', menuClick, this, 1, 0);
     menuButtonLabel = game.add.text(((gameOptions.gameWidth/2)-50), 218, 'Main Menu' , { font: '22px Arial', fill: '#000000' });
@@ -499,6 +522,7 @@ function undoClick() {
 }
 
 function menuClick() {
+  menuFlag = 1;
   game.state.start('menu');
 }
 
@@ -569,7 +593,7 @@ function criticalMass(rowIndex, colIndex) {
     }
 }
 
-function checkWin() {
+async function checkWin() {
   let winChance;
   let win;
   for(let rowIndex=0; rowIndex<gameState.board.length; ++rowIndex) {
@@ -606,6 +630,7 @@ function checkWin() {
   }
   if(win==1 || win==-1) {
     winner = win;
+    await sleep(gameOptions.burstTime);
     game.state.start('win');
   }
 }
