@@ -1,14 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 import json
 
-<<<<<<< HEAD
-from agent1.alpha_beta import *
-from agent1.board import *
-from agent2.DQN import *
-board = Board()
-
-network = QNetwork()
-=======
 from agent.alpha_beta import *
 from agent.board import *
 from agent.DQN import *
@@ -17,7 +9,6 @@ import time
 board = Board()
 network = QNetwork()
 
->>>>>>> final task
 app = Flask(__name__)
 app.config["DEBUG"] = False
 
