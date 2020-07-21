@@ -1,7 +1,38 @@
-# Chain Reaction
+# chain-reaction
 
-Chain Reaction is a deterministic combinatorial game of perfect information for 2 - 8 players. For more information on the game, view our project.pdf file.
+Chain reaction is a popular online game
 
-This repo contains all our efforts in making an AI for playing Chain Reaction. This includes all our well documented codes, presentation slides and sample images of our output.
+## Getting Started
 
-Authors: Job Jacob, Paul Antony
+you can clone the code from repo "https://gitlab.com/paul-antony.public/chain-reaction.git"
+
+run the file api.py as 
+
+
+### Prerequisites
+
+python3 : ``` sudo apt-get install python3```
+ 
+python3-flask : ``` pip3 install flask```
+
+
+
+## Versioning
+
+version 1.1
+
+## Authors
+
+* **Job Jacob**
+* **Paul Antony**
+
+
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+
+
+
+
+
