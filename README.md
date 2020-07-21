@@ -9,7 +9,7 @@ The game was developed in JavaScript using Phaser 3. The agent was developed in 
 you can clone the code from repo "https://github.com/paul-antony/chain-reaction"
 
 
-run the file api.py as ``` python3 main.py```
+run the file main.py as ``` python3 main.py```
 
 ### Prerequisites
 
